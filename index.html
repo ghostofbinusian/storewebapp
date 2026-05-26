@@ -93,26 +93,6 @@
     <p id="loading-message" class="mt-4 text-slate-300 font-medium tracking-wide text-sm">Syncing with Google Database...</p>
   </div>
 
-  <!-- PIN Modal -->
-  <div id="pin-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center transition-all duration-300">
-    <div class="w-full max-w-sm p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl relative">
-      <div class="text-center mb-6">
-        <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center mx-auto mb-3">
-          <i data-lucide="lock" class="w-6 h-6"></i>
-        </div>
-        <h4 class="text-lg font-bold text-white font-sans">Admin Verification</h4>
-        <p class="text-xs text-slate-400 mt-1">Please enter the security PIN to access the Admin Panel</p>
-      </div>
-      <form onsubmit="verifyAdminPin(event)" class="space-y-4">
-        <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full text-center tracking-[1em] text-2xl font-bold px-4 py-3 bg-slate-950 border border-slate-800 focus:border-brand-500 text-white rounded-xl focus:outline-none">
-        <div class="grid grid-cols-2 gap-3 pt-2">
-          <button type="button" onclick="closePinModal()" class="w-full py-2.5 border border-slate-850 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-xl text-sm font-semibold transition-all">Cancel</button>
-          <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-950/20 transition-all">Verify PIN</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <!-- App Wrapper -->
   <div class="min-h-full flex flex-col">
 
@@ -132,39 +112,41 @@
           Core<span class="text-brand-400">Store</span>
         </h1>
         <p class="mt-2 text-slate-400 max-w-xs mx-auto text-sm sm:text-base">
-          Unified Storefront Cashier, Storage & Restock Management Hub
+          Unified Storefront Cashier, Storage & Sales Audit Portal
         </p>
       </div>
 
-      <!-- Selection Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl w-full z-10 px-4">
-        <!-- Admin Card -->
-        <button onclick="selectRole('admin')" class="group relative flex flex-col text-left p-8 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-brand-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-brand-500/10 hover:-translate-y-1 overflow-hidden">
-          <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-brand-500/5 rounded-full blur-xl group-hover:bg-brand-500/10 transition-colors"></div>
-          <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-            <i data-lucide="key-round" class="w-6 h-6"></i>
-          </div>
-          <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-            Admin Dashboard <i data-lucide="arrow-right" class="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"></i>
-          </h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            Access checkout register counter, modify shelf quantities, edit locations, flag restocks, and manage inventory settings.
+      <!-- Entry Containers -->
+      <div class="w-full max-w-md z-10 px-4">
+        <!-- Card 1: Portal Intro -->
+        <div id="portal-intro-card" class="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 text-center shadow-2xl transition-all duration-300">
+          <h3 class="text-xl font-bold text-white mb-2">Access Portal</h3>
+          <p class="text-sm text-slate-400 mb-6 leading-relaxed">
+            Please log in to manage register checkout transactions, inspect stock levels, and audit daily sales sheets.
           </p>
-        </button>
+          <button onclick="showPinEntry()" class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-500 hover:to-indigo-400 text-white font-bold rounded-xl shadow-lg shadow-brand-950/20 flex items-center justify-center gap-2 group transition-all duration-300">
+            <i data-lucide="key-round" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+            🔑 Enter Admin Portal
+          </button>
+        </div>
 
-        <!-- Worker Card -->
-        <button onclick="selectRole('worker')" class="group relative flex flex-col text-left p-8 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-emerald-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/10 hover:-translate-y-1 overflow-hidden">
-          <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-colors"></div>
-          <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-            <i data-lucide="package" class="w-6 h-6"></i>
+        <!-- Card 2: PIN Verification (Hidden initially) -->
+        <div id="portal-pin-card" class="hidden p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-2xl transition-all duration-300">
+          <div class="text-center mb-6">
+            <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center mx-auto mb-3">
+              <i data-lucide="lock" class="w-6 h-6"></i>
+            </div>
+            <h4 class="text-lg font-bold text-white">Verification PIN</h4>
+            <p class="text-xs text-slate-400 mt-1">Please enter the security PIN to verify access</p>
           </div>
-          <h3 class="text-xl font-bold text-white mb-2 flex items-center gap-2">
-            Worker Task Panel <i data-lucide="arrow-right" class="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300"></i>
-          </h3>
-          <p class="text-sm text-slate-400 leading-relaxed">
-            Load the high-contrast restock pull sheets directly. Check off products that need restocking from storage rooms.
-          </p>
-        </button>
+          <form onsubmit="verifyAdminPin(event)" class="space-y-4">
+            <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full text-center tracking-[1em] text-2xl font-bold px-4 py-3 bg-slate-950 border border-slate-800 focus:border-brand-500 text-white rounded-xl focus:outline-none">
+            <div class="grid grid-cols-2 gap-3 pt-2">
+              <button type="button" onclick="hidePinEntry()" class="w-full py-2.5 border border-slate-800 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-xl text-sm font-semibold transition-all">Back</button>
+              <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-950/20 transition-all">Verify PIN</button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <!-- Offline Status Banner -->
@@ -197,7 +179,7 @@
               </div>
             </div>
 
-            <!-- Navigation Tabs (Admin Only) -->
+            <!-- Navigation Tabs -->
             <nav id="admin-tabs" class="hidden md:flex space-x-1">
               <button onclick="switchTab('cashier')" id="tab-btn-cashier" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
                 <i data-lucide="shopping-cart" class="w-4 h-4"></i>
@@ -211,6 +193,10 @@
                 <i data-lucide="check-square" class="w-4 h-4"></i>
                 Restock Checklist
                 <span id="restock-badge" class="hidden px-1.5 py-0.2 text-[10px] font-bold bg-amber-500 text-slate-950 rounded-full">0</span>
+              </button>
+              <button onclick="switchTab('sales')" id="tab-btn-sales" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                Sales Log
               </button>
             </nav>
 
@@ -227,7 +213,7 @@
           </div>
         </div>
 
-        <!-- Mobile Bottom Tabs (Admin Only) -->
+        <!-- Mobile Bottom Tabs -->
         <div id="admin-mobile-tabs" class="hidden md:hidden border-t border-slate-800/80 bg-slate-900/90 flex justify-around py-2">
           <button onclick="switchTab('cashier')" id="mobile-tab-btn-cashier" class="flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3">
             <i data-lucide="shopping-cart" class="w-5 h-5"></i>
@@ -241,6 +227,10 @@
             <i data-lucide="check-square" class="w-5 h-5"></i>
             Restock
             <span id="mobile-restock-badge" class="hidden absolute top-0.5 right-2 px-1.5 py-0.2 text-[8px] font-bold bg-amber-500 text-slate-950 rounded-full">0</span>
+          </button>
+          <button onclick="switchTab('sales')" id="mobile-tab-btn-sales" class="flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3">
+            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+            Sales
           </button>
         </div>
       </header>
@@ -432,14 +422,15 @@
     }
 
     const state = {
-      role: null,          // 'admin' | 'worker' | null
-      activeTab: 'cashier', // 'cashier' | 'storage' | 'restock'
+      role: null,          // 'admin' | null
+      activeTab: 'cashier', // 'cashier' | 'storage' | 'restock' | 'sales'
       inventory: [],       // Current database inventory
       cart: {},            // Cart format: { "Item Name": { quantity, item } }
       searchQuery: '',     // Realtime filter string for cashier
       loading: false,      // Fetching state
       isNewFormOpen: false, // UI visibility
-      isUsingMockData: false // Connection state
+      isUsingMockData: false, // Connection state
+      salesLog: []         // Local audit checkout log list
     };
 
     // ----------------------------------------------------
@@ -460,55 +451,23 @@
       roleSelectionView.classList.add('hidden');
       workspaceView.classList.remove('hidden');
 
-      // Setup Role-specific badges and layout
+      // Setup Admin Panel Layout
       const roleBadge = document.getElementById('role-badge');
-      const adminTabs = document.getElementById('admin-tabs');
-      const adminMobileTabs = document.getElementById('admin-mobile-tabs');
-      const restockDescWrapper = document.getElementById('restock-description-wrapper');
+      roleBadge.innerText = "Admin Portal";
+      roleBadge.className = "ml-2 px-2 py-0.5 text-[10px] tracking-wider uppercase font-semibold rounded-md bg-brand-500/10 text-brand-400 border border-brand-500/20";
 
-      if (state.role === 'admin') {
-        roleBadge.innerText = "Admin Portal";
-        roleBadge.className = "ml-2 px-2 py-0.5 text-[10px] tracking-wider uppercase font-semibold rounded-md bg-brand-500/10 text-brand-400 border border-brand-500/20";
-        adminTabs.classList.remove('hidden');
-        adminTabs.classList.add('flex');
-        adminMobileTabs.classList.remove('hidden');
-        adminMobileTabs.classList.add('flex');
-        
-        // Show all tabs but activate selected
-        document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-        document.getElementById(`tab-content-${state.activeTab}`).classList.remove('hidden');
-        
-        // Show description wrapper for Admin restock checklist
-        restockDescWrapper.classList.remove('hidden');
-        
-        // Update header active buttons styles
-        updateTabButtonStyles();
-        
-        // Render Tab Components
-        if (state.activeTab === 'cashier') renderCashier();
-        if (state.activeTab === 'storage') renderStorage();
-        if (state.activeTab === 'restock') renderRestock();
-      } else {
-        // Worker Role Settings
-        roleBadge.innerText = "Worker Panel";
-        roleBadge.className = "ml-2 px-2 py-0.5 text-[10px] tracking-wider uppercase font-semibold rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-        adminTabs.classList.remove('flex');
-        adminTabs.classList.add('hidden');
-        adminMobileTabs.classList.remove('flex');
-        adminMobileTabs.classList.add('hidden');
-
-        // Worker immediately and exclusively sees restock checklist
-        document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-        document.getElementById('tab-content-restock').classList.remove('hidden');
-        
-        // Hide description wrapper for worker to keep it clean and minimal
-        restockDescWrapper.classList.add('hidden');
-        
-        // Modify theme to a highly accessible contrast layout for workers
-        document.body.className = "h-full bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden";
-
-        renderRestock();
-      }
+      // Show active tab pane
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-content-${state.activeTab}`).classList.remove('hidden');
+      
+      // Update header tab active buttons styles
+      updateTabButtonStyles();
+      
+      // Render Tab Components
+      if (state.activeTab === 'cashier') renderCashier();
+      if (state.activeTab === 'storage') renderStorage();
+      if (state.activeTab === 'restock') renderRestock();
+      if (state.activeTab === 'sales') renderSalesLog();
 
       // Sync Restock Badges counts in nav
       const restockCount = state.inventory.filter(i => i.needsRestock).length;
@@ -531,7 +490,7 @@
 
     // Header buttons states highlighter
     function updateTabButtonStyles() {
-      const tabs = ['cashier', 'storage', 'restock'];
+      const tabs = ['cashier', 'storage', 'restock', 'sales'];
       tabs.forEach(tab => {
         const btn = document.getElementById(`tab-btn-${tab}`);
         const mBtn = document.getElementById(`mobile-tab-btn-${tab}`);
@@ -797,9 +756,24 @@
         return;
       }
 
+    function renderRestock() {
+      const restockList = document.getElementById('restock-list');
+      const restockFiltered = state.inventory.filter(item => item.needsRestock);
+
+      if (restockFiltered.length === 0) {
+        restockList.innerHTML = `
+          <div class="col-span-full py-16 flex flex-col items-center justify-center text-center text-slate-500 bg-slate-900/10 border border-dashed border-slate-850 rounded-2xl">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
+              <i data-lucide="check-circle" class="w-8 h-8"></i>
+            </div>
+            <h4 class="text-base font-bold text-slate-300">All Shelves Stocked!</h4>
+            <p class="text-xs text-slate-500 max-w-xs mt-1">There are no items currently marked for restock pull.</p>
+          </div>
+        `;
+        return;
+      }
+
       restockList.innerHTML = restockFiltered.map((item, idx) => {
-        // High-contrast clean list for workers
-        const uniqueId = `pull-check-${idx}`;
         return `
           <div class="flex flex-col p-5 bg-slate-900/60 border border-slate-800/80 rounded-2xl relative overflow-hidden group">
             <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-xl"></div>
@@ -824,19 +798,9 @@
                 <span class="text-white font-bold">${item.location}</span>
               </div>
 
-              <!-- Worker action button to resolve item (locally removes from pull list temporarily) -->
-              ${state.role === 'worker' ? `
-                <button 
-                  onclick="resolveRestockItemLocal('${item.name.replace(/'/g, "\\'")}')"
-                  class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold transition-all shadow-md shadow-emerald-950/20"
-                >
-                  <i data-lucide="check" class="w-3.5 h-3.5"></i> Mark Done
-                </button>
-              ` : `
-                <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 pulse-subtle"></span> Pull Flagged
-                </span>
-              `}
+              <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 pulse-subtle"></span> Pull Flagged
+              </span>
             </div>
           </div>
         `;
@@ -844,37 +808,108 @@
     }
 
     // ----------------------------------------------------
-    // 6. UI ACTIONS INTERACTIVITY
+    // 5.5 TAB VIEW: SALES LOG SUMMARY
     // ----------------------------------------------------
-    function selectRole(roleName) {
-      if (roleName === 'admin') {
-        openPinModal();
+    function initSalesLog() {
+      const stored = localStorage.getItem('corestore_sales_log');
+      if (stored) {
+        state.salesLog = JSON.parse(stored);
       } else {
-        state.role = roleName;
-        state.activeTab = 'cashier'; // Default admin tab
-        render();
-        showToast('success', 'Logged in as Warehouse Worker');
+        // Seed with beautiful mock data
+        state.salesLog = [
+          { id: "TXN-7341", date: "2026-05-27", time: "09:30:15", itemName: "Organic Honeycrisp Apples", quantity: 2, total: 70000 },
+          { id: "TXN-7342", date: "2026-05-27", time: "11:15:22", itemName: "Artisanal Sourdough Loaf", quantity: 1, total: 28000 },
+          { id: "TXN-7343", date: "2026-05-27", time: "14:40:02", itemName: "Premium Cold Brew Coffee", quantity: 3, total: 126000 }
+        ];
+        localStorage.setItem('corestore_sales_log', JSON.stringify(state.salesLog));
       }
     }
 
-    function openPinModal() {
-      const modal = document.getElementById('pin-modal');
+    function renderSalesLog() {
+      const tbody = document.getElementById('sales-log-table-body');
+      
+      const statsTotalVal = document.getElementById('stats-total-value');
+      const statsTotalQty = document.getElementById('stats-total-qty');
+      const statsTotalTxns = document.getElementById('stats-total-txns');
+
+      if (state.salesLog.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="px-6 py-16 text-center text-slate-500">
+              <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-2 stroke-1"></i>
+              <div class="text-sm font-medium">No sales recorded yet</div>
+            </td>
+          </tr>
+        `;
+        statsTotalVal.innerText = "Rp 0";
+        statsTotalQty.innerText = "0 items";
+        statsTotalTxns.innerText = "0";
+        return;
+      }
+
+      let totalVal = 0;
+      let totalQty = 0;
+
+      tbody.innerHTML = state.salesLog.map(txn => {
+        totalVal += txn.total;
+        totalQty += txn.quantity;
+
+        return `
+          <tr class="hover:bg-slate-900/30 transition-colors">
+            <td class="px-6 py-4 font-mono font-bold text-brand-400 whitespace-nowrap">
+              ${txn.id}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="text-xs text-slate-400">${txn.date}</div>
+              <div class="text-sm text-white font-semibold mt-0.5">${txn.time}</div>
+            </td>
+            <td class="px-6 py-4">
+              <div class="font-bold text-white">${txn.itemName}</div>
+              <div class="text-xs text-slate-500 mt-0.5">Qty: ${txn.quantity}</div>
+            </td>
+            <td class="px-6 py-4 text-right font-extrabold text-white whitespace-nowrap">
+              ${formatIDR(txn.total)}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      statsTotalVal.innerText = formatIDR(totalVal);
+      statsTotalQty.innerText = `${totalQty} ${totalQty === 1 ? 'item' : 'items'}`;
+      statsTotalTxns.innerText = state.salesLog.length;
+    }
+
+    function clearSalesLog() {
+      if (confirm("Are you sure you want to clear the sales audit log from this device? This will not affect the daily spreadsheets.")) {
+        state.salesLog = [];
+        localStorage.removeItem('corestore_sales_log');
+        render();
+        showToast('success', 'Sales log cleared successfully');
+      }
+    }
+
+    // ----------------------------------------------------
+    // 6. UI ACTIONS INTERACTIVITY
+    // ----------------------------------------------------
+    function showPinEntry() {
+      document.getElementById('portal-intro-card').classList.add('hidden');
+      const pinCard = document.getElementById('portal-pin-card');
       const input = document.getElementById('pin-input');
       input.value = '';
-      modal.classList.remove('hidden');
+      pinCard.classList.remove('hidden');
       setTimeout(() => input.focus(), 100);
     }
 
-    function closePinModal() {
-      const modal = document.getElementById('pin-modal');
-      modal.classList.add('hidden');
+    function hidePinEntry() {
+      document.getElementById('portal-pin-card').classList.add('hidden');
+      document.getElementById('portal-intro-card').classList.remove('hidden');
     }
 
     function verifyAdminPin(event) {
       event.preventDefault();
       const input = document.getElementById('pin-input');
       if (input.value === '2411') {
-        closePinModal();
+        document.getElementById('portal-pin-card').classList.add('hidden');
         state.role = 'admin';
         state.activeTab = 'cashier';
         render();
@@ -1221,6 +1256,10 @@
       showLoader(true, "Registering checkout transactions...");
 
       let successCount = 0;
+      
+      const today = new Date();
+      const dateStr = today.toISOString().split('T')[0];
+      const timeStr = today.toTimeString().split(' ')[0];
 
       for (const entry of items) {
         const payload = {
@@ -1240,11 +1279,26 @@
           
           applyPayloadToLocalState(payload);
           successCount++;
+          
+          // Append transaction to local sales log
+          const txnId = "TXN-" + Math.floor(1000 + Math.random() * 9000);
+          state.salesLog.unshift({
+            id: txnId,
+            date: dateStr,
+            time: timeStr,
+            itemName: entry.item.name,
+            quantity: entry.quantity,
+            total: entry.item.price * entry.quantity
+          });
+          
         } catch (err) {
           console.error("Sale POST Error for item " + entry.item.name + ":", err);
           applyPayloadToLocalState(payload);
         }
       }
+      
+      // Update local storage log
+      localStorage.setItem('corestore_sales_log', JSON.stringify(state.salesLog));
 
       showLoader(false);
       
@@ -1337,6 +1391,8 @@
     // 9. APP START INITIALIZATION
     // ----------------------------------------------------
     window.addEventListener('DOMContentLoaded', () => {
+      // Load sales log history
+      initSalesLog();
       // Sync initial load
       refreshData();
     });
