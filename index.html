@@ -93,6 +93,26 @@
     <p id="loading-message" class="mt-4 text-slate-300 font-medium tracking-wide text-sm">Syncing with Google Database...</p>
   </div>
 
+  <!-- PIN Modal -->
+  <div id="pin-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center transition-all duration-300">
+    <div class="w-full max-w-sm p-8 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl relative">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 rounded-xl bg-brand-500/10 text-brand-400 flex items-center justify-center mx-auto mb-3">
+          <i data-lucide="lock" class="w-6 h-6"></i>
+        </div>
+        <h4 class="text-lg font-bold text-white font-sans">Admin Verification</h4>
+        <p class="text-xs text-slate-400 mt-1">Please enter the security PIN to access the Admin Panel</p>
+      </div>
+      <form onsubmit="verifyAdminPin(event)" class="space-y-4">
+        <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full text-center tracking-[1em] text-2xl font-bold px-4 py-3 bg-slate-950 border border-slate-800 focus:border-brand-500 text-white rounded-xl focus:outline-none">
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button type="button" onclick="closePinModal()" class="w-full py-2.5 border border-slate-850 hover:bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-xl text-sm font-semibold transition-all">Cancel</button>
+          <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-950/20 transition-all">Verify PIN</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- App Wrapper -->
   <div class="min-h-full flex flex-col">
 
@@ -152,6 +172,11 @@
         <span class="w-2 h-2 rounded-full bg-yellow-500 pulse-subtle"></span>
         <span>Initializing connection to Google sheet...</span>
       </div>
+
+      <!-- Watermark footer -->
+      <footer class="mt-auto pt-8 text-slate-650 text-xs font-semibold tracking-wider flex items-center gap-1.5 hover:text-slate-400 transition-colors z-10 cursor-default select-none">
+        <i data-lucide="code" class="w-3.5 h-3.5 text-slate-700"></i> Made By Kikatsuu
+      </footer>
     </div>
 
     <!-- Main Workspace View (Hidden initially) -->
@@ -272,7 +297,7 @@
             <div class="mt-4 space-y-4">
               <div class="flex justify-between items-baseline">
                 <span class="text-sm font-semibold text-slate-400">Grand Total</span>
-                <span id="cart-grand-total" class="text-3xl font-extrabold text-white tracking-tight">$0.00</span>
+                <span id="cart-grand-total" class="text-3xl font-extrabold text-white tracking-tight">Rp 0</span>
               </div>
               <button onclick="checkoutSale()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold rounded-xl shadow-lg shadow-emerald-950/20 flex items-center justify-center gap-2 group transition-all duration-300 hover:shadow-emerald-500/10">
                 <i data-lucide="check-circle-2" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
@@ -300,8 +325,8 @@
                   <input required name="name" type="text" placeholder="e.g. Fresh Gala Apples" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
                 </div>
                 <div class="space-y-1">
-                  <label class="block text-xs font-semibold text-slate-400 uppercase">Price ($ USD)</label>
-                  <input required name="price" type="number" step="0.01" min="0" placeholder="0.00" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
+                  <label class="block text-xs font-semibold text-slate-400 uppercase">Price (IDR / Rp)</label>
+                  <input required name="price" type="number" step="1" min="0" placeholder="e.g. 25000" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
                 </div>
                 <div class="space-y-1">
                   <label class="block text-xs font-semibold text-slate-400 uppercase">Qty in Stock</label>
@@ -372,6 +397,11 @@
         </div>
 
       </main>
+      
+      <!-- Footer Watermark in Workspace -->
+      <footer class="py-4 border-t border-slate-900/60 text-center text-xs text-slate-600 font-semibold tracking-wider flex items-center justify-center gap-1.5 cursor-default select-none">
+        <i data-lucide="code" class="w-3.5 h-3.5 text-slate-700"></i> Made By Kikatsuu
+      </footer>
     </div>
 
   </div>
@@ -385,15 +415,21 @@
 
     // Offline MOCK DATA to fallback gracefully and allow full interactive testing.
     const MOCK_DATA = [
-      { name: "Organic Honeycrisp Apples", price: 2.49, quantity: 42, location: "Store", needsRestock: false },
-      { name: "Whole Vitamin D Milk 1G", price: 3.89, quantity: 4, location: "Store", needsRestock: true },
-      { name: "Artisanal Sourdough Loaf", price: 4.50, quantity: 0, location: "Storage", needsRestock: true },
-      { name: "Premium Cold Brew Coffee", price: 5.99, quantity: 18, location: "Store", needsRestock: false },
-      { name: "Greek Blueberry Yogurt", price: 1.25, quantity: 50, location: "Storage", needsRestock: false },
-      { name: "Double A Alkaline Batteries", price: 7.99, quantity: 12, location: "Store", needsRestock: true },
-      { name: "Extra Virgin Olive Oil 500ml", price: 12.99, quantity: 15, location: "Store", needsRestock: false },
-      { name: "Gluten-Free Tortilla Chips", price: 3.29, quantity: 0, location: "Empty", needsRestock: true }
+      { name: "Organic Honeycrisp Apples", price: 35000, quantity: 42, location: "Store", needsRestock: false },
+      { name: "Whole Vitamin D Milk 1G", price: 45000, quantity: 4, location: "Store", needsRestock: true },
+      { name: "Artisanal Sourdough Loaf", price: 28000, quantity: 0, location: "Storage", needsRestock: true },
+      { name: "Premium Cold Brew Coffee", price: 42000, quantity: 18, location: "Store", needsRestock: false },
+      { name: "Greek Blueberry Yogurt", price: 18000, quantity: 50, location: "Storage", needsRestock: false },
+      { name: "Double A Alkaline Batteries", price: 85000, quantity: 12, location: "Store", needsRestock: true },
+      { name: "Extra Virgin Olive Oil 500ml", price: 145000, quantity: 15, location: "Store", needsRestock: false },
+      { name: "Gluten-Free Tortilla Chips", price: 32000, quantity: 0, location: "Empty", needsRestock: true }
     ];
+
+    // Currency Formatter Helper for IDR
+    function formatIDR(val) {
+      const number = Math.round(parseFloat(val) || 0);
+      return 'Rp ' + number.toLocaleString('id-ID');
+    }
 
     const state = {
       role: null,          // 'admin' | 'worker' | null
@@ -564,7 +600,7 @@
             </h4>
 
             <div class="mt-auto w-full flex items-center justify-between">
-              <span class="text-lg font-extrabold text-white">$${item.price.toFixed(2)}</span>
+              <span class="text-lg font-extrabold text-white">${formatIDR(item.price)}</span>
               ${!cardDisabled ? `
                 <div class="w-8 h-8 rounded-lg bg-brand-600 group-hover:bg-brand-500 text-white flex items-center justify-center transition-all group-hover:scale-105 shadow-md shadow-brand-950/20">
                   <i data-lucide="plus" class="w-4 h-4"></i>
@@ -606,7 +642,7 @@
             <p class="text-xs text-slate-500 max-w-[180px] mt-1 mx-auto">Click product catalog cards on the left to add items</p>
           </div>
         `;
-        cartGrandTotal.innerText = "$0.00";
+        cartGrandTotal.innerText = "Rp 0";
         return;
       }
 
@@ -625,9 +661,9 @@
             <div class="flex-1 min-w-0">
               <h5 class="text-sm font-bold text-white truncate" title="${item.name}">${item.name}</h5>
               <div class="flex items-center gap-2 mt-1">
-                <span class="text-xs text-slate-400 font-medium">$${item.price.toFixed(2)}</span>
+                <span class="text-xs text-slate-400 font-medium">${formatIDR(item.price)}</span>
                 <span class="text-[10px] text-slate-600">•</span>
-                <span class="text-xs font-bold text-brand-400">$${total.toFixed(2)}</span>
+                <span class="text-xs font-bold text-brand-400">${formatIDR(total)}</span>
               </div>
             </div>
             
@@ -653,8 +689,7 @@
           </div>
         `;
       }).join('');
-
-      cartGrandTotal.innerText = `$${grandTotal.toFixed(2)}`;
+      cartGrandTotal.innerText = formatIDR(grandTotal);
     }
 
     // ----------------------------------------------------
@@ -684,7 +719,7 @@
             </td>
             <!-- Unit Price -->
             <td class="px-6 py-4 font-medium text-slate-400 whitespace-nowrap">
-              $${item.price.toFixed(2)}
+              ${formatIDR(item.price)}
             </td>
             <!-- Quantity adjustment input -->
             <td class="px-6 py-4 whitespace-nowrap">
@@ -806,10 +841,43 @@
     // 6. UI ACTIONS INTERACTIVITY
     // ----------------------------------------------------
     function selectRole(roleName) {
-      state.role = roleName;
-      state.activeTab = 'cashier'; // Default admin tab
-      render();
-      showToast('success', `Logged in as ${roleName === 'admin' ? 'Administrator' : 'Warehouse Worker'}`);
+      if (roleName === 'admin') {
+        openPinModal();
+      } else {
+        state.role = roleName;
+        state.activeTab = 'cashier'; // Default admin tab
+        render();
+        showToast('success', 'Logged in as Warehouse Worker');
+      }
+    }
+
+    function openPinModal() {
+      const modal = document.getElementById('pin-modal');
+      const input = document.getElementById('pin-input');
+      input.value = '';
+      modal.classList.remove('hidden');
+      setTimeout(() => input.focus(), 100);
+    }
+
+    function closePinModal() {
+      const modal = document.getElementById('pin-modal');
+      modal.classList.add('hidden');
+    }
+
+    function verifyAdminPin(event) {
+      event.preventDefault();
+      const input = document.getElementById('pin-input');
+      if (input.value === '2411') {
+        closePinModal();
+        state.role = 'admin';
+        state.activeTab = 'cashier';
+        render();
+        showToast('success', 'Access granted. Welcome back, Admin!');
+      } else {
+        showToast('error', '❌ Invalid Access PIN.');
+        input.value = '';
+        input.focus();
+      }
     }
 
     function switchTab(tabName) {
@@ -908,8 +976,9 @@
         // Background update dispatch so Google Sheet remains synchronized
         const payload = {
           action: 'updateInventory',
-          name: item.name,
+          itemName: item.name,
           quantity: item.quantity,
+          price: item.price,
           location: item.location,
           needsRestock: false
         };
@@ -1109,53 +1178,80 @@
     function applyPayloadToLocalState(payload) {
       if (payload.action === 'newSale') {
         // Decrease stock based on cart checkout
-        payload.cart.forEach(sold => {
-          const item = state.inventory.find(i => i.name === sold.name);
-          if (item) {
-            item.quantity = Math.max(0, item.quantity - sold.quantity);
-          }
-        });
+        const item = state.inventory.find(i => i.name.toLowerCase() === payload.itemName.toLowerCase());
+        if (item) {
+          item.quantity = Math.max(0, item.quantity - payload.quantity);
+        }
       } else if (payload.action === 'updateInventory') {
-        const item = state.inventory.find(i => i.name === payload.name);
+        const item = state.inventory.find(i => i.name.toLowerCase() === payload.itemName.toLowerCase());
         if (item) {
           item.quantity = payload.quantity;
+          item.price = payload.price;
           item.location = payload.location;
           item.needsRestock = payload.needsRestock;
-        }
-      } else if (payload.action === 'addItem' || payload.action === 'newItem') {
-        // Append new item to local array if it doesn't already exist
-        const exists = state.inventory.some(i => i.name === payload.name);
-        if (!exists) {
+        } else {
+          // If it's a new item (not found in database), append to local state
           state.inventory.push({
-            name: payload.name,
+            name: payload.itemName,
             price: parseFloat(payload.price) || 0.0,
             quantity: parseInt(payload.quantity) || 0,
             location: payload.location || 'Empty',
-            needsRestock: false
+            needsRestock: !!payload.needsRestock
           });
         }
       }
     }
 
     // Trigger Checkout Sale Submit
-    function checkoutSale() {
+    async function checkoutSale() {
       const items = Object.values(state.cart);
       if (items.length === 0) return;
 
-      const payload = {
-        action: 'newSale',
-        cart: items.map(entry => ({
-          name: entry.item.name,
-          quantity: entry.quantity,
-          price: entry.item.price
-        }))
-      };
+      showLoader(true, "Registering checkout transactions...");
 
-      apiPost(payload, "🛒 Checkout completed! Sales registered.").then(() => {
-        // Clear local shopping cart
-        state.cart = {};
-        render();
-      });
+      let successCount = 0;
+
+      for (const entry of items) {
+        const payload = {
+          action: 'newSale',
+          itemName: entry.item.name,
+          quantity: entry.quantity,
+          totalPrice: entry.item.price * entry.quantity
+        };
+
+        try {
+          await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          
+          applyPayloadToLocalState(payload);
+          successCount++;
+        } catch (err) {
+          console.error("Sale POST Error for item " + entry.item.name + ":", err);
+          applyPayloadToLocalState(payload);
+        }
+      }
+
+      showLoader(false);
+      
+      if (successCount === items.length) {
+        showToast('success', `🛒 Checkout completed! Registered ${successCount} items.`);
+      } else if (successCount > 0) {
+        showToast('warning', `⚠️ Checkout completed with warnings. Registered ${successCount}/${items.length} items.`);
+      } else {
+        showToast('error', `❌ Network connection error. Updates saved locally.`);
+      }
+
+      // Clear local shopping cart
+      state.cart = {};
+      render();
+
+      setTimeout(() => {
+        refreshData(false);
+      }, 1200);
     }
 
     // Trigger Single Table Row Update
@@ -1170,10 +1266,15 @@
       const updatedLoc = locSelect.value;
       const updatedRestock = restockCheck.checked;
 
+      // Find current price from local state so it doesn't get set to 0 or NaN
+      const item = state.inventory.find(i => i.name === itemName);
+      const itemPrice = item ? item.price : 0;
+
       const payload = {
         action: 'updateInventory',
-        name: itemName,
+        itemName: itemName,
         quantity: updatedQty,
+        price: itemPrice,
         location: updatedLoc,
         needsRestock: updatedRestock
       };
@@ -1189,7 +1290,7 @@
       const formData = new FormData(form);
 
       const newItemName = formData.get('name').trim();
-      const newItemPrice = parseFloat(formData.get('price'));
+      const newItemPrice = parseFloat(formData.get('price')) || 0;
       const newItemQty = parseInt(formData.get('quantity')) || 0;
       const newItemLoc = formData.get('location');
 
@@ -1204,9 +1305,10 @@
         return;
       }
 
+      // Action is updateInventory to match sheet API append logic
       const payload = {
-        action: 'addItem', // Sends standard action parameter
-        name: newItemName,
+        action: 'updateInventory',
+        itemName: newItemName,
         price: newItemPrice,
         quantity: newItemQty,
         location: newItemLoc,
