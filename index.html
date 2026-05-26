@@ -246,7 +246,7 @@
       </header>
 
       <!-- Tab Content Area -->
-      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col min-h-0">
+      <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 flex flex-col min-h-0">
         
         <!-- ================= TAB: CASHIER COUNTER ================= -->
         <div id="tab-content-cashier" class="tab-pane hidden flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
@@ -271,7 +271,7 @@
 
             <!-- Scrollable Catalog Grid -->
             <div class="flex-1 overflow-y-auto pr-1 no-scrollbar min-h-0">
-              <div id="cashier-product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div id="cashier-product-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <!-- Skeletons render initially or dynamically -->
               </div>
             </div>
@@ -336,8 +336,8 @@
                   <label class="block text-xs font-semibold text-slate-400 uppercase">Store Location</label>
                   <select required name="location" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
                     <option value="Empty">Empty</option>
-                    <option value="Storage">Storage</option>
-                    <option value="Store">Store</option>
+                    <option value="Gudang">Gudang</option>
+                    <option value="Toko">Toko</option>
                   </select>
                 </div>
                 <div class="md:col-span-4 flex justify-end gap-3 mt-2 border-t border-slate-800/80 pt-4">
@@ -415,13 +415,13 @@
 
     // Offline MOCK DATA to fallback gracefully and allow full interactive testing.
     const MOCK_DATA = [
-      { name: "Organic Honeycrisp Apples", price: 35000, quantity: 42, location: "Store", needsRestock: false },
-      { name: "Whole Vitamin D Milk 1G", price: 45000, quantity: 4, location: "Store", needsRestock: true },
-      { name: "Artisanal Sourdough Loaf", price: 28000, quantity: 0, location: "Storage", needsRestock: true },
-      { name: "Premium Cold Brew Coffee", price: 42000, quantity: 18, location: "Store", needsRestock: false },
-      { name: "Greek Blueberry Yogurt", price: 18000, quantity: 50, location: "Storage", needsRestock: false },
-      { name: "Double A Alkaline Batteries", price: 85000, quantity: 12, location: "Store", needsRestock: true },
-      { name: "Extra Virgin Olive Oil 500ml", price: 145000, quantity: 15, location: "Store", needsRestock: false },
+      { name: "Organic Honeycrisp Apples", price: 35000, quantity: 42, location: "Toko", needsRestock: false },
+      { name: "Whole Vitamin D Milk 1G", price: 45000, quantity: 4, location: "Toko", needsRestock: true },
+      { name: "Artisanal Sourdough Loaf", price: 28000, quantity: 0, location: "Gudang", needsRestock: true },
+      { name: "Premium Cold Brew Coffee", price: 42000, quantity: 18, location: "Toko", needsRestock: false },
+      { name: "Greek Blueberry Yogurt", price: 18000, quantity: 50, location: "Gudang", needsRestock: false },
+      { name: "Double A Alkaline Batteries", price: 85000, quantity: 12, location: "Toko", needsRestock: true },
+      { name: "Extra Virgin Olive Oil 500ml", price: 145000, quantity: 15, location: "Toko", needsRestock: false },
       { name: "Gluten-Free Tortilla Chips", price: 32000, quantity: 0, location: "Empty", needsRestock: true }
     ];
 
@@ -478,6 +478,9 @@
         document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
         document.getElementById(`tab-content-${state.activeTab}`).classList.remove('hidden');
         
+        // Show description wrapper for Admin restock checklist
+        restockDescWrapper.classList.remove('hidden');
+        
         // Update header active buttons styles
         updateTabButtonStyles();
         
@@ -497,6 +500,9 @@
         // Worker immediately and exclusively sees restock checklist
         document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
         document.getElementById('tab-content-restock').classList.remove('hidden');
+        
+        // Hide description wrapper for worker to keep it clean and minimal
+        restockDescWrapper.classList.add('hidden');
         
         // Modify theme to a highly accessible contrast layout for workers
         document.body.className = "h-full bg-slate-950 text-slate-100 font-sans antialiased overflow-x-hidden";
@@ -738,8 +744,8 @@
                 class="w-32 px-2 py-1 bg-slate-950 border border-slate-800 focus:border-brand-500 text-slate-200 rounded-lg focus:outline-none text-sm font-medium"
               >
                 <option value="Empty" ${item.location === 'Empty' ? 'selected' : ''}>Empty</option>
-                <option value="Storage" ${item.location === 'Storage' ? 'selected' : ''}>Storage</option>
-                <option value="Store" ${item.location === 'Store' ? 'selected' : ''}>Store</option>
+                <option value="Gudang" ${item.location === 'Gudang' ? 'selected' : ''}>Gudang</option>
+                <option value="Toko" ${item.location === 'Toko' ? 'selected' : ''}>Toko</option>
               </select>
             </td>
             <!-- Restock Tag Toggle Switch -->
@@ -1080,14 +1086,19 @@
         return [];
       }
 
-      return rawArr.map(item => ({
-        name: item.name || 'Unnamed Item',
-        price: parseFloat(item.price) || 0.0,
-        quantity: parseInt(item.quantity) === 0 ? 0 : (parseInt(item.quantity) || 0),
-        location: item.location || 'Empty',
-        // Support direct boolean, string representation 'true', or numerical boolean
-        needsRestock: String(item.needsRestock).toLowerCase() === 'true' || item.needsRestock === true || item.needsRestock === 1
-      }));
+      return rawArr.map(item => {
+        let loc = item.location || 'Empty';
+        if (loc === 'Storage') loc = 'Gudang';
+        if (loc === 'Store') loc = 'Toko';
+        
+        return {
+          name: item.name || 'Unnamed Item',
+          price: parseFloat(item.price) || 0.0,
+          quantity: parseInt(item.quantity) === 0 ? 0 : (parseInt(item.quantity) || 0),
+          location: loc,
+          needsRestock: String(item.needsRestock).toLowerCase() === 'true' || item.needsRestock === true || item.needsRestock === 1
+        };
+      });
     }
 
     // GET Request to load inventory
