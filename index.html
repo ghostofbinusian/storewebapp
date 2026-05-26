@@ -36,6 +36,7 @@
     }
   </script>
   <style>
+    /* Custom animations and smooth scroll */
     @keyframes pulse-subtle {
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.85; transform: scale(0.98); }
@@ -43,12 +44,34 @@
     .pulse-subtle {
       animation: pulse-subtle 2s infinite ease-in-out;
     }
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    .dark-glass-panel {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    /* Hide scrollbar but keep functional */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
     .no-scrollbar {
       -ms-overflow-style: none;
       scrollbar-width: none;
+    }
+    /* Custom switch styling */
+    .toggle-checkbox:checked {
+      right: 0;
+      border-color: #10B981;
+      background-color: #10B981;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #A7F3D0;
     }
   </style>
 </head>
@@ -67,6 +90,7 @@
   <div class="min-h-full flex flex-col">
 
     <div id="role-selection-view" class="flex-1 flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-950 via-slate-950 to-slate-950">
+      
       <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-brand-600/10 rounded-full blur-[100px] pointer-events-none"></div>
       <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-[100px] pointer-events-none"></div>
 
@@ -117,7 +141,7 @@
         <span>Initializing connection to Google sheet...</span>
       </div>
 
-      <footer class="mt-auto pt-8 text-slate-600 text-xs font-semibold tracking-wider flex items-center gap-1.5 hover:text-slate-400 transition-colors z-10 cursor-default select-none">
+      <footer class="mt-auto pt-8 text-slate-650 text-xs font-semibold tracking-wider flex items-center gap-1.5 hover:text-slate-400 transition-colors z-10 cursor-default select-none">
         <i data-lucide="code" class="w-3.5 h-3.5 text-slate-700"></i> Made By Kikatsuu
       </footer>
     </div>
@@ -138,18 +162,22 @@
             </div>
 
             <nav id="admin-tabs" class="hidden md:flex space-x-1">
-              <button onclick="switchTab('cashier')" id="tab-btn-cashier" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200">
-                <i data-lucide="shopping-cart" class="w-4 h-4"></i> Cashier Counter
+              <button onclick="switchTab('cashier')" id="tab-btn-cashier" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                Cashier Counter
               </button>
-              <button onclick="switchTab('storage')" id="tab-btn-storage" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200">
-                <i data-lucide="database" class="w-4 h-4"></i> Storage Manager
+              <button onclick="switchTab('storage')" id="tab-btn-storage" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                <i data-lucide="database" class="w-4 h-4"></i>
+                Storage Manager
               </button>
-              <button onclick="switchTab('restock')" id="tab-btn-restock" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200">
-                <i data-lucide="check-square" class="w-4 h-4"></i> Restock Checklist
+              <button onclick="switchTab('restock')" id="tab-btn-restock" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                <i data-lucide="check-square" class="w-4 h-4"></i>
+                Restock Checklist
                 <span id="restock-badge" class="hidden px-1.5 py-0.2 text-[10px] font-bold bg-amber-500 text-slate-950 rounded-full">0</span>
               </button>
-              <button onclick="switchTab('sales')" id="tab-btn-sales" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200">
-                <i data-lucide="bar-chart-3" class="w-4 h-4"></i> Sales Log
+              <button onclick="switchTab('sales')" id="tab-btn-sales" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50">
+                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                Sales Log
               </button>
             </nav>
 
@@ -158,25 +186,30 @@
                 <i data-lucide="rotate-cw" class="w-5 h-5"></i>
               </button>
               <button onclick="logout()" class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 text-sm font-medium transition-all duration-200">
-                <i data-lucide="log-out" class="w-4 h-4"></i> <span class="hidden sm:inline">Exit Portal</span>
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Exit Portal</span>
               </button>
             </div>
           </div>
         </div>
 
-        <div id="admin-mobile-tabs" class="md:hidden border-t border-slate-800/80 bg-slate-900/90 flex justify-around py-2">
-          <button onclick="switchTab('cashier')" id="mobile-tab-btn-cashier" class="flex flex-col items-center gap-0.5 text-[10px] font-medium py-1 px-3">
-            <i data-lucide="shopping-cart" class="w-5 h-5"></i> Cashier
+        <div id="admin-mobile-tabs" class="hidden md:hidden border-t border-slate-800/80 bg-slate-900/90 flex justify-around py-2">
+          <button onclick="switchTab('cashier')" id="mobile-tab-btn-cashier" class="flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3">
+            <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+            Cashier
           </button>
-          <button onclick="switchTab('storage')" id="mobile-tab-btn-storage" class="flex flex-col items-center gap-0.5 text-[10px] font-medium py-1 px-3">
-            <i data-lucide="database" class="w-5 h-5"></i> Storage
+          <button onclick="switchTab('storage')" id="mobile-tab-btn-storage" class="flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3">
+            <i data-lucide="database" class="w-5 h-5"></i>
+            Storage
           </button>
-          <button onclick="switchTab('restock')" id="mobile-tab-btn-restock" class="flex flex-col items-center gap-0.5 text-[10px] font-medium py-1 px-3 relative">
-            <i data-lucide="check-square" class="w-5 h-5"></i> Restock
+          <button onclick="switchTab('restock')" id="mobile-tab-btn-restock" class="flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3 relative">
+            <i data-lucide="check-square" class="w-5 h-5"></i>
+            Restock
             <span id="mobile-restock-badge" class="hidden absolute top-0.5 right-2 px-1.5 py-0.2 text-[8px] font-bold bg-amber-500 text-slate-950 rounded-full">0</span>
           </button>
-          <button onclick="switchTab('sales')" id="mobile-tab-btn-sales" class="flex flex-col items-center gap-0.5 text-[10px] font-medium py-1 px-3">
-            <i data-lucide="bar-chart-3" class="w-5 h-5"></i> Sales
+          <button onclick="switchTab('sales')" id="mobile-tab-btn-sales" class="flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3">
+            <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+            Sales
           </button>
         </div>
       </header>
@@ -184,6 +217,7 @@
       <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 flex flex-col min-h-0">
         
         <div id="tab-content-cashier" class="tab-pane hidden flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
+          
           <div class="flex-1 flex flex-col min-h-0 bg-slate-900/30 border border-slate-800 rounded-2xl p-4 sm:p-6">
             <div class="mb-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
               <div>
@@ -199,8 +233,10 @@
                 <input oninput="updateSearch(this.value)" type="text" placeholder="Search catalog..." class="block w-full pl-9 pr-4 py-2 border border-slate-700 bg-slate-950 text-slate-200 placeholder-slate-500 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 text-sm">
               </div>
             </div>
+
             <div class="flex-1 overflow-y-auto pr-1 no-scrollbar min-h-0">
-              <div id="cashier-product-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4"></div>
+              <div id="cashier-product-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                </div>
             </div>
           </div>
 
@@ -211,22 +247,44 @@
               </h2>
               <span id="cart-item-count" class="px-2 py-0.5 rounded bg-slate-800 text-xs text-slate-400 font-semibold">0 items</span>
             </div>
-            <div class="flex-1 overflow-y-auto no-scrollbar border-t border-b border-slate-800/80 my-2 py-4 min-h-[200px] flex flex-col gap-3">
-              <div id="cart-list" class="flex-1 flex flex-col gap-3"></div>
+
+            <div class="space-y-2.5 mb-3">
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Customer Name</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500"><i data-lucide="user" class="w-3.5 h-3.5"></i></span>
+                  <input type="text" id="cart-customer-name" placeholder="e.g. Axel" class="block w-full pl-9 pr-3 py-1.5 text-xs bg-slate-950 border border-slate-800 focus:border-brand-500 text-white rounded-xl focus:outline-none transition-colors font-medium">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Phone Number</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500"><i data-lucide="phone" class="w-3.5 h-3.5"></i></span>
+                  <input type="tel" id="cart-customer-phone" placeholder="e.g. 08123456789" class="block w-full pl-9 pr-3 py-1.5 text-xs bg-slate-950 border border-slate-800 focus:border-brand-500 text-white rounded-xl focus:outline-none transition-colors font-mono">
+                </div>
+              </div>
             </div>
+
+            <div class="flex-1 overflow-y-auto no-scrollbar border-t border-b border-slate-800/80 my-2 py-4 min-h-[180px] flex flex-col gap-3">
+              <div id="cart-list" class="flex-1 flex flex-col gap-3">
+                </div>
+            </div>
+
             <div class="mt-4 space-y-4">
               <div class="flex justify-between items-baseline">
                 <span class="text-sm font-semibold text-slate-400">Grand Total</span>
                 <span id="cart-grand-total" class="text-3xl font-extrabold text-white tracking-tight">Rp 0</span>
               </div>
-              <button onclick="checkoutSale()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold rounded-xl shadow-lg shadow-emerald-950/20 flex items-center justify-center gap-2 group transition-all duration-300">
-                <i data-lucide="check-circle-2" class="w-5 h-5 group-hover:scale-110 transition-transform"></i> Complete Checkout
+              <button onclick="checkoutSale()" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold rounded-xl shadow-lg shadow-emerald-950/20 flex items-center justify-center gap-2 group transition-all duration-300 hover:shadow-emerald-500/10">
+                <i data-lucide="check-circle-2" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                Complete Checkout
               </button>
             </div>
           </div>
         </div>
 
         <div id="tab-content-storage" class="tab-pane hidden flex-1 flex flex-col gap-6 min-h-0">
+          
           <div class="bg-slate-900/30 border border-slate-800 rounded-2xl overflow-hidden">
             <button onclick="toggleNewItemForm()" class="w-full flex items-center justify-between px-6 py-4 text-left font-bold text-white hover:bg-slate-800/20 transition-all duration-200">
               <span class="flex items-center gap-2">
@@ -238,27 +296,27 @@
               <form id="new-item-form" onsubmit="submitNewItem(event)" class="p-6 grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="space-y-1">
                   <label class="block text-xs font-semibold text-slate-400 uppercase">Product Name</label>
-                  <input required name="name" type="text" placeholder="e.g. Fresh Gala Apples" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-sm focus:outline-none">
+                  <input required name="name" type="text" placeholder="e.g. Fresh Gala Apples" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
                 </div>
                 <div class="space-y-1">
                   <label class="block text-xs font-semibold text-slate-400 uppercase">Price (IDR / Rp)</label>
-                  <input required name="price" type="number" placeholder="e.g. 25000" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-sm focus:outline-none">
+                  <input required name="price" type="number" step="1" min="0" placeholder="e.g. 25000" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
                 </div>
                 <div class="space-y-1">
                   <label class="block text-xs font-semibold text-slate-400 uppercase">Qty in Stock</label>
-                  <input required name="quantity" type="number" placeholder="0" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-sm focus:outline-none">
+                  <input required name="quantity" type="number" min="0" placeholder="0" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
                 </div>
                 <div class="space-y-1">
                   <label class="block text-xs font-semibold text-slate-400 uppercase">Store Location</label>
-                  <select required name="location" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-sm focus:outline-none">
+                  <select required name="location" class="w-full px-3 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm">
                     <option value="Empty">Empty</option>
                     <option value="Gudang">Gudang</option>
                     <option value="Toko">Toko</option>
                   </select>
                 </div>
                 <div class="md:col-span-4 flex justify-end gap-3 mt-2 border-t border-slate-800/80 pt-4">
-                  <button type="button" onclick="toggleNewItemForm()" class="px-4 py-2 border border-slate-700 text-slate-400 rounded-xl text-sm font-medium">Cancel</button>
-                  <button type="submit" class="px-6 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-bold shadow-lg">Save to Database</button>
+                  <button type="button" onclick="toggleNewItemForm()" class="px-4 py-2 border border-slate-700 text-slate-400 hover:text-slate-200 rounded-xl text-sm font-medium transition-all">Cancel</button>
+                  <button type="submit" class="px-6 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-950/20 transition-all">Save to Database</button>
                 </div>
               </form>
             </div>
@@ -271,6 +329,7 @@
               </h2>
               <p class="text-xs text-slate-400">Make configurations directly inside row cells and submit row updates</p>
             </div>
+
             <div class="flex-1 overflow-x-auto overflow-y-auto no-scrollbar min-h-0 rounded-xl border border-slate-800/80">
               <table class="w-full border-collapse text-left text-sm text-slate-300">
                 <thead class="bg-slate-900/80 text-xs font-semibold uppercase text-slate-400 sticky top-0 z-10 border-b border-slate-800">
@@ -283,44 +342,67 @@
                     <th scope="col" class="px-6 py-4 text-right w-28">Actions</th>
                   </tr>
                 </thead>
-                <tbody id="inventory-table-body" class="divide-y divide-slate-800/50 bg-slate-950/20"></tbody>
+                <tbody id="inventory-table-body" class="divide-y divide-slate-800/50 bg-slate-950/20">
+                  </tbody>
               </table>
             </div>
           </div>
         </div>
 
         <div id="tab-content-restock" class="tab-pane hidden flex-1 flex flex-col min-h-0">
-          <div class="mb-6">
+          
+          <div id="restock-description-wrapper" class="mb-6">
             <h2 class="text-2xl font-extrabold text-white flex items-center gap-2 tracking-tight">
               <i data-lucide="check-square" class="w-6 h-6 text-amber-500"></i> Restock Pull Sheet
             </h2>
-            <p class="text-sm text-slate-400">Products marked for restocking by administrators.</p>
+            <p class="text-sm text-slate-400">Products marked for restocking by administrators. Check off when items are loaded to store shelves.</p>
           </div>
+
           <div class="flex-1 overflow-y-auto no-scrollbar min-h-0">
-            <div id="restock-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            <div id="restock-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              </div>
           </div>
         </div>
 
-        <div id="tab-content-sales" class="tab-pane hidden flex-1 flex flex-col min-h-0">
-          <div class="mb-4">
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <i data-lucide="bar-chart-3" class="w-5 h-5 text-cyan-400"></i> Daily Sales Audit Log
-            </h2>
-            <p class="text-xs text-slate-400">Live view of checkout logs written to today's daily sheet configuration.</p>
+        <div id="tab-content-sales" class="tab-pane hidden flex-1 flex flex-col gap-6 min-h-0">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                <i data-lucide="bar-chart-3" class="w-5 h-5 text-brand-400"></i> Audit Grouped Sales Log
+              </h2>
+              <p class="text-xs text-slate-400">Transactions grouped elegantly by customer session records</p>
+            </div>
+            <button onclick="clearSalesLog()" class="px-4 py-2 border border-red-500/20 hover:bg-red-500/10 text-red-400 text-xs font-bold rounded-xl transition-all flex items-center gap-2">
+              <i data-lucide="trash-2" class="w-4 h-4"></i> Clear Device Audit Logs
+            </button>
           </div>
-          <div class="flex-1 overflow-x-auto overflow-y-auto no-scrollbar min-h-0 rounded-xl border border-slate-800/80">
-            <table class="w-full border-collapse text-left text-sm text-slate-300">
-              <thead class="bg-slate-900/80 text-xs font-semibold uppercase text-slate-400 sticky top-0 z-10 border-b border-slate-800">
-                <tr>
-                  <th scope="col" class="px-6 py-4">Timestamp</th>
-                  <th scope="col" class="px-6 py-4">Product Name</th>
-                  <th scope="col" class="px-6 py-4 w-32">Quantity Sold</th>
-                  <th scope="col" class="px-6 py-4 text-right w-40">Total Transaction</th>
-                </tr>
-              </thead>
-              <tbody id="sales-table-body" class="divide-y divide-slate-800/50 bg-slate-950/20"></tbody>
-            </table>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="p-5 bg-slate-900/40 border border-slate-800 rounded-2xl flex items-center gap-4">
+              <div class="w-12 h-12 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+              <div>
+                <p class="text-xs text-slate-400 font-medium">Total Registered Revenue</p>
+                <h4 id="stats-total-value" class="text-xl font-extrabold text-white tracking-tight mt-0.5">Rp 0</h4>
+              </div>
+            </div>
+            <div class="p-5 bg-slate-900/40 border border-slate-800 rounded-2xl flex items-center gap-4">
+              <div class="w-12 h-12 bg-brand-500/10 text-brand-400 rounded-xl flex items-center justify-center"><i data-lucide="package" class="w-6 h-6"></i></div>
+              <div>
+                <p class="text-xs text-slate-400 font-medium">Total Units Checked Out</p>
+                <h4 id="stats-total-qty" class="text-xl font-extrabold text-white tracking-tight mt-0.5">0 items</h4>
+              </div>
+            </div>
+            <div class="p-5 bg-slate-900/40 border border-slate-800 rounded-2xl flex items-center gap-4">
+              <div class="w-12 h-12 bg-indigo-500/10 text-indigo-400 rounded-xl flex items-center justify-center"><i data-lucide="receipt" class="w-6 h-6"></i></div>
+              <div>
+                <p class="text-xs text-slate-400 font-medium">Customer Checkout Sessions</p>
+                <h4 id="stats-total-txns" class="text-xl font-extrabold text-white tracking-tight mt-0.5">0</h4>
+              </div>
+            </div>
           </div>
+
+          <div id="sales-log-grouped-container" class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-4 min-h-0">
+            </div>
         </div>
 
       </main>
@@ -329,69 +411,101 @@
         <i data-lucide="code" class="w-3.5 h-3.5 text-slate-700"></i> Made By Kikatsuu
       </footer>
     </div>
+
   </div>
 
   <script>
+    // ----------------------------------------------------
+    // 1. GLOBAL STATE & CONFIGURATION
+    // ----------------------------------------------------
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL7tYuMLadAtzaZ_dJV8fkmg0do0es6LqbaDIK77e_OLHLxwfSe2hce0s3YNb6Tpnr/exec';
 
+    // Offline MOCK DATA to fallback gracefully and allow full interactive testing.
     const MOCK_DATA = [
       { name: "Organic Honeycrisp Apples", price: 35000, quantity: 42, location: "Toko", needsRestock: false },
       { name: "Whole Vitamin D Milk 1G", price: 45000, quantity: 4, location: "Toko", needsRestock: true },
-      { name: "Artisanal Sourdough Loaf", price: 28000, quantity: 0, location: "Gudang", needsRestock: true }
+      { name: "Artisanal Sourdough Loaf", price: 28000, quantity: 0, location: "Gudang", needsRestock: true },
+      { name: "Premium Cold Brew Coffee", price: 42000, quantity: 18, location: "Toko", needsRestock: false },
+      { name: "Greek Blueberry Yogurt", price: 18000, quantity: 50, location: "Gudang", needsRestock: false },
+      { name: "Double A Alkaline Batteries", price: 85000, quantity: 12, location: "Toko", needsRestock: true },
+      { name: "Extra Virgin Olive Oil 500ml", price: 145000, quantity: 15, location: "Toko", needsRestock: false },
+      { name: "Gluten-Free Tortilla Chips", price: 32000, quantity: 0, location: "Empty", needsRestock: true }
     ];
 
+    // Currency Formatter Helper for IDR
     function formatIDR(val) {
-      return 'Rp ' + Math.round(parseFloat(val) || 0).toLocaleString('id-ID');
+      const number = Math.round(parseFloat(val) || 0);
+      return 'Rp ' + number.toLocaleString('id-ID');
     }
 
     const state = {
-      role: null,          
-      activeTab: 'cashier', 
-      inventory: [],       
-      cart: {},            
-      searchQuery: '',     
-      loading: false,      
-      isNewFormOpen: false, 
-      salesLog: JSON.parse(localStorage.getItem('corestore_sales_log')) || []         
+      role: null,          // 'admin' | null
+      activeTab: 'cashier', // 'cashier' | 'storage' | 'restock' | 'sales'
+      inventory: [],       // Current database inventory
+      cart: {},            // Cart format: { "Item Name": { quantity, item } }
+      searchQuery: '',     // Realtime filter string for cashier
+      loading: false,      // Fetching state
+      isNewFormOpen: false, // UI visibility
+      isUsingMockData: false, // Connection state
+      salesLog: []         // Local audit checkout log list
     };
 
+    // ----------------------------------------------------
+    // 2. ROOT RENDER CONTROLLER
+    // ----------------------------------------------------
     function render() {
+      // Role selection screen vs Workspace screen
       const roleSelectionView = document.getElementById('role-selection-view');
       const workspaceView = document.getElementById('workspace-view');
 
       if (!state.role) {
         roleSelectionView.classList.remove('hidden');
         workspaceView.classList.add('hidden');
+        document.body.className = "h-full bg-slate-900 text-slate-100 font-sans antialiased overflow-x-hidden";
         return;
       }
 
       roleSelectionView.classList.add('hidden');
       workspaceView.classList.remove('hidden');
 
+      // Setup Admin Panel Layout
+      const roleBadge = document.getElementById('role-badge');
+      roleBadge.innerText = "Admin Portal";
+      roleBadge.className = "ml-2 px-2 py-0.5 text-[10px] tracking-wider uppercase font-semibold rounded-md bg-brand-500/10 text-brand-400 border border-brand-500/20";
+
+      // Show active tab pane
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
       document.getElementById(`tab-content-${state.activeTab}`).classList.remove('hidden');
       
+      // Update header tab active buttons styles
       updateTabButtonStyles();
       
+      // Render Tab Components
       if (state.activeTab === 'cashier') renderCashier();
       if (state.activeTab === 'storage') renderStorage();
       if (state.activeTab === 'restock') renderRestock();
       if (state.activeTab === 'sales') renderSalesLog();
 
+      // Sync Restock Badges counts in nav
       const restockCount = state.inventory.filter(i => i.needsRestock).length;
       const restockBadge = document.getElementById('restock-badge');
       const mobileRestockBadge = document.getElementById('mobile-restock-badge');
       
       if (restockCount > 0) {
-        restockBadge.innerText = restockCount; restockBadge.classList.remove('hidden');
-        mobileRestockBadge.innerText = restockCount; mobileRestockBadge.classList.remove('hidden');
+        restockBadge.innerText = restockCount;
+        restockBadge.classList.remove('hidden');
+        mobileRestockBadge.innerText = restockCount;
+        mobileRestockBadge.classList.remove('hidden');
       } else {
-        restockBadge.classList.add('hidden'); mobileRestockBadge.classList.add('hidden');
+        restockBadge.classList.add('hidden');
+        mobileRestockBadge.classList.add('hidden');
       }
 
+      // Re-create icons for any dynamically injected SVGs
       lucide.createIcons();
     }
 
+    // Header buttons states highlighter
     function updateTabButtonStyles() {
       const tabs = ['cashier', 'storage', 'restock', 'sales'];
       tabs.forEach(tab => {
@@ -399,22 +513,35 @@
         const mBtn = document.getElementById(`mobile-tab-btn-${tab}`);
         
         if (state.activeTab === tab) {
-          if(btn) btn.className = "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all bg-brand-500/10 text-brand-400 border border-brand-500/20";
-          if(mBtn) mBtn.className = "flex flex-col items-center gap-0.5 text-[10px] font-medium text-brand-400 py-1 px-3";
+          btn.className = "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 bg-brand-500/10 text-brand-400 border border-brand-500/20";
+          mBtn.className = "flex flex-col items-center gap-0.5 text-[10px] font-medium text-brand-400 py-1 px-3";
         } else {
-          if(btn) btn.className = "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
-          if(mBtn) mBtn.className = "flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3";
+          btn.className = "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
+          mBtn.className = "flex flex-col items-center gap-0.5 text-[10px] font-medium text-slate-400 py-1 px-3";
         }
       });
     }
 
+    // ----------------------------------------------------
+    // 3. TAB VIEW: CASHIER REGISTER
+    // ----------------------------------------------------
     function renderCashier() {
       const grid = document.getElementById('cashier-product-grid');
-      const filtered = state.inventory.filter(item => item.name.toLowerCase().includes(state.searchQuery.toLowerCase()));
+      
+      // Filter catalog by search query
+      const filtered = state.inventory.filter(item => 
+        item.name.toLowerCase().includes(state.searchQuery.toLowerCase())
+      );
 
       if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-16 flex flex-col items-center text-slate-500"><i data-lucide="alert-circle" class="w-12 h-12 mb-2"></i><span>No items found</span></div>`;
-        renderCart(); return;
+        grid.innerHTML = `
+          <div class="col-span-full py-16 flex flex-col items-center justify-center text-slate-500">
+            <i data-lucide="alert-circle" class="w-12 h-12 mb-2 stroke-1"></i>
+            <span class="text-sm font-medium">No inventory products found</span>
+          </div>
+        `;
+        renderCart();
+        return;
       }
 
       grid.innerHTML = filtered.map(item => {
@@ -424,19 +551,56 @@
         const cardDisabled = isOutOfStock || remainingStock <= 0;
 
         return `
-          <button onclick="${cardDisabled ? '' : `addToCart('${item.name.replace(/'/g, "\\'")}')`}" class="group relative flex flex-col text-left p-5 rounded-2xl border transition-all duration-300 bg-slate-950/40 ${cardDisabled ? 'border-slate-800/50 opacity-50 cursor-not-allowed' : 'border-slate-800/80 hover:border-brand-500/40 hover:bg-slate-900/40'}">
+          <button 
+            onclick="${cardDisabled ? '' : `addToCart('${item.name.replace(/'/g, "\\'")}')`}"
+            class="group relative flex flex-col text-left p-5 rounded-2xl border transition-all duration-300 text-slate-300 bg-slate-950/40 
+              ${cardDisabled 
+                ? 'border-slate-800/50 bg-slate-900/10 opacity-50 cursor-not-allowed' 
+                : 'border-slate-800/80 hover:border-brand-500/40 hover:bg-slate-900/40 hover:shadow-lg hover:-translate-y-0.5'
+              }"
+            ${cardDisabled ? 'disabled' : ''}
+          >
             <div class="flex items-center justify-between w-full mb-3">
-              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${isOutOfStock ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}">${isOutOfStock ? 'Out of stock' : `${remainingStock} available`}</span>
-              <span class="text-xs text-slate-500 font-semibold flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i> ${item.location}</span>
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
+                isOutOfStock 
+                  ? 'bg-red-500/10 text-red-400 border border-red-500/20' 
+                  : remainingStock <= 5 
+                    ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+              }">
+                ${isOutOfStock ? 'Out of stock' : `${remainingStock} in stock`}
+              </span>
+              <span class="text-xs text-slate-500 font-semibold flex items-center gap-1">
+                <i data-lucide="map-pin" class="w-3 h-3"></i> ${item.location}
+              </span>
             </div>
-            <h4 class="text-base font-bold text-white mb-4 line-clamp-2 min-h-[3rem]">${item.name}</h4>
+
+            <h4 class="text-base font-bold text-white mb-4 line-clamp-2 min-h-[3rem] group-hover:text-brand-300 transition-colors">
+              ${item.name}
+            </h4>
+
             <div class="mt-auto w-full flex items-center justify-between">
               <span class="text-lg font-extrabold text-white">${formatIDR(item.price)}</span>
-              <div class="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center"><i data-lucide="plus" class="w-4 h-4"></i></div>
+              ${!cardDisabled ? `
+                <div class="w-8 h-8 rounded-lg bg-brand-600 group-hover:bg-brand-500 text-white flex items-center justify-center transition-all group-hover:scale-105 shadow-md shadow-brand-950/20">
+                  <i data-lucide="plus" class="w-4 h-4"></i>
+                </div>
+              ` : `
+                <div class="w-8 h-8 rounded-lg bg-slate-800 text-slate-600 flex items-center justify-center">
+                  <i data-lucide="slash" class="w-4 h-4"></i>
+                </div>
+              `}
             </div>
-            ${cartQty > 0 ? `<div class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-brand-500 text-white text-xs font-black flex items-center justify-center border border-slate-900">${cartQty}</div>` : ''}
-          </button>`;
+
+            ${cartQty > 0 ? `
+              <div class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-brand-500 text-white text-xs font-black flex items-center justify-center border border-slate-900 shadow-md">
+                ${cartQty}
+              </div>
+            ` : ''}
+          </button>
+        `;
       }).join('');
+
       renderCart();
     }
 
@@ -444,134 +608,440 @@
       const cartList = document.getElementById('cart-list');
       const cartItemCount = document.getElementById('cart-item-count');
       const cartGrandTotal = document.getElementById('cart-grand-total');
+
       const items = Object.values(state.cart);
-      
-      cartItemCount.innerText = `${items.reduce((sum, e) => sum + e.quantity, 0)} items`;
+      const totalCount = items.reduce((sum, entry) => sum + entry.quantity, 0);
+      cartItemCount.innerText = `${totalCount} ${totalCount === 1 ? 'item' : 'items'}`;
+
       if (items.length === 0) {
-        cartList.innerHTML = `<div class="py-12 text-slate-600 text-center"><h5 class="text-sm font-semibold text-slate-400">Cart is Empty</h5></div>`;
-        cartGrandTotal.innerText = "Rp 0"; return;
+        cartList.innerHTML = `
+          <div class="flex-1 flex flex-col items-center justify-center py-12 text-slate-600 text-center">
+            <i data-lucide="shopping-cart" class="w-12 h-12 mb-3 stroke-1 animate-pulse"></i>
+            <h5 class="text-sm font-semibold text-slate-400">Cart is Empty</h5>
+            <p class="text-xs text-slate-500 max-w-[180px] mt-1 mx-auto">Click product catalog cards on the left to add items</p>
+          </div>
+        `;
+        cartGrandTotal.innerText = "Rp 0";
+        return;
       }
 
       let grandTotal = 0;
+
       cartList.innerHTML = items.map(entry => {
-        const total = entry.item.price * entry.quantity; grandTotal += total;
+        const item = entry.item;
+        const qty = entry.quantity;
+        const total = item.price * qty;
+        grandTotal += total;
+
+        const maxAvailable = item.quantity;
+
         return `
-          <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 group">
             <div class="flex-1 min-w-0">
-              <h5 class="text-sm font-bold text-white truncate">${entry.item.name}</h5>
-              <div class="text-xs text-brand-400 font-bold">${formatIDR(total)}</div>
+              <h5 class="text-sm font-bold text-white truncate" title="${item.name}">${item.name}</h5>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-xs text-slate-400 font-medium">${formatIDR(item.price)}</span>
+                <span class="text-[10px] text-slate-600">•</span>
+                <span class="text-xs font-bold text-brand-400">${formatIDR(total)}</span>
+              </div>
             </div>
+            
             <div class="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5">
-              <button onclick="decrementCartItem('${entry.item.name.replace(/'/g, "\\'")}')" class="w-7 h-7 text-slate-400 hover:text-white font-bold">-</button>
-              <span class="w-8 text-center text-xs font-extrabold text-white">${entry.quantity}</span>
-              <button onclick="incrementCartItem('${entry.item.name.replace(/'/g, "\\'")}')" class="w-7 h-7 text-slate-400 hover:text-white font-bold">+</button>
+              <button onclick="decrementCartItem('${item.name.replace(/'/g, "\\'")}')" class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition-colors">
+                <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+              </button>
+              <span class="w-8 text-center text-xs font-extrabold text-white">${qty}</span>
+              <button 
+                onclick="incrementCartItem('${item.name.replace(/'/g, "\\'")}')" 
+                class="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-white rounded-md hover:bg-slate-800 transition-colors ${qty >= maxAvailable ? 'opacity-30 cursor-not-allowed' : ''}"
+                ${qty >= maxAvailable ? 'disabled' : ''}
+              >
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              </button>
             </div>
-          </div>`;
+
+            <button onclick="removeCartItem('${item.name.replace(/'/g, "\\'")}')" class="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all" title="Delete">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
       }).join('');
       cartGrandTotal.innerText = formatIDR(grandTotal);
     }
 
+    // ----------------------------------------------------
+    // 4. TAB VIEW: STORAGE INVENTORY TABLE
+    // ----------------------------------------------------
     function renderStorage() {
       const tbody = document.getElementById('inventory-table-body');
+      
       if (state.inventory.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-500">Inventory sheet missing items.</td></tr>`; return;
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="px-6 py-16 text-center text-slate-500">
+              <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-2 stroke-1"></i>
+              <div class="text-sm font-medium">Empty catalog table</div>
+            </td>
+          </tr>
+        `;
+        return;
       }
-      tbody.innerHTML = state.inventory.map((item, idx) => `
-        <tr class="hover:bg-slate-900/30">
-          <td class="px-6 py-4 font-bold text-white">${item.name}</td>
-          <td class="px-6 py-4 font-medium text-slate-400">${formatIDR(item.price)}</td>
-          <td class="px-6 py-4"><input type="number" id="qty-input-${idx}" value="${item.quantity}" class="w-20 px-2 py-1 bg-slate-950 border border-slate-800 text-center text-sm rounded-lg text-white"></td>
-          <td class="px-6 py-4">
-            <select id="location-select-${idx}" class="w-32 px-2 py-1 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white">
-              <option value="Empty" ${item.location === 'Empty'?'selected':''}>Empty</option>
-              <option value="Gudang" ${item.location === 'Gudang'?'selected':''}>Gudang</option>
-              <option value="Toko" ${item.location === 'Toko'?'selected':''}>Toko</option>
-            </select>
-          </td>
-          <td class="px-6 py-4 text-center">
-            <input type="checkbox" id="restock-toggle-${idx}" ${item.needsRestock ? 'checked' : ''} class="w-4 h-4 accent-brand-500">
-          </td>
-          <td class="px-6 py-4 text-right">
-            <button onclick="updateRowInventory('${item.name.replace(/'/g, "\\'")}', ${idx})" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white rounded-lg text-xs font-bold">Update</button>
-          </td>
-        </tr>`).join('');
+
+      tbody.innerHTML = state.inventory.map((item, idx) => {
+        return `
+          <tr class="hover:bg-slate-900/30 transition-colors group">
+            <td class="px-6 py-4 font-bold text-white whitespace-nowrap">
+              ${item.name}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 focus-within:border-brand-500 max-w-[120px]">
+                <span class="text-xs text-slate-500 font-bold">Rp</span>
+                <input 
+                  type="number" 
+                  id="price-input-${idx}" 
+                  value="${item.price}" 
+                  min="0"
+                  step="1"
+                  class="w-full bg-transparent text-slate-200 font-semibold focus:outline-none text-sm"
+                >
+              </div>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <input 
+                type="number" 
+                id="qty-input-${idx}" 
+                value="${item.quantity}" 
+                min="0"
+                class="w-20 px-2 py-1 bg-slate-950 border border-slate-800 focus:border-brand-500 text-slate-200 font-semibold rounded-lg focus:outline-none text-center text-sm"
+              >
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              <select 
+                id="location-select-${idx}" 
+                class="w-32 px-2 py-1 bg-slate-950 border border-slate-800 focus:border-brand-500 text-slate-200 rounded-lg focus:outline-none text-sm font-medium"
+              >
+                <option value="Empty" ${item.location === 'Empty' ? 'selected' : ''}>Empty</option>
+                <option value="Gudang" ${item.location === 'Gudang' ? 'selected' : ''}>Gudang</option>
+                <option value="Toko" ${item.location === 'Toko' ? 'selected' : ''}>Toko</option>
+              </select>
+            </td>
+            <td class="px-6 py-4 text-center whitespace-nowrap">
+              <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                <input 
+                  type="checkbox" 
+                  id="restock-toggle-${idx}" 
+                  ${item.needsRestock ? 'checked' : ''}
+                  class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-slate-800 border-4 border-slate-950 appearance-none cursor-pointer focus:outline-none transition-all duration-200 right-4"
+                />
+                <label 
+                  for="restock-toggle-${idx}" 
+                  class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-900 border border-slate-800 cursor-pointer"
+                ></label>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-right whitespace-nowrap">
+              <button 
+                onclick="updateRowInventory('${item.name.replace(/'/g, "\\'")}', ${idx})" 
+                class="px-3.5 py-1.5 bg-brand-600/10 text-brand-400 hover:bg-brand-600 hover:text-white rounded-lg text-xs font-bold transition-all border border-brand-500/20 shadow-sm"
+              >
+                Update
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
 
+    // ----------------------------------------------------
+    // 5. TAB VIEW: RESTOCK CHECKLIST PULL SHEET
+    // ----------------------------------------------------
     function renderRestock() {
       const restockList = document.getElementById('restock-list');
-      const restockFiltered = state.inventory.filter(item => item.needsRestock);
+      const restockFiltered = state.inventory.filter(item => item.needsRestock || item.quantity <= 0);
 
       if (restockFiltered.length === 0) {
-        restockList.innerHTML = `<div class="col-span-full py-16 text-center text-slate-500"><h4 class="text-base font-bold text-slate-300">All Shelves Stocked!</h4></div>`; return;
+        restockList.innerHTML = `
+          <div class="col-span-full py-16 flex flex-col items-center justify-center text-center text-slate-500 bg-slate-900/10 border border-dashed border-slate-850 rounded-2xl">
+            <div class="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3">
+              <i data-lucide="check-circle" class="w-8 h-8"></i>
+            </div>
+            <h4 class="text-base font-bold text-slate-300">All Shelves Stocked!</h4>
+            <p class="text-xs text-slate-500 max-w-xs mt-1">There are no items currently marked for restock pull.</p>
+          </div>
+        `;
+        return;
       }
-      restockList.innerHTML = restockFiltered.map(item => `
-        <div class="flex flex-col p-5 bg-slate-900/60 border border-slate-800 rounded-2xl">
-          <h4 class="text-base font-bold text-white mb-2">${item.name}</h4>
-          <div class="text-xs text-amber-400 mb-4">Location: <span class="text-white font-bold">${item.location}</span></div>
-          <button onclick="resolveRestockItemLocal('${item.name.replace(/'/g, "\\'")}')" class="mt-auto w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl">Mark Loaded / Done</button>
-        </div>`).join('');
+
+      restockList.innerHTML = restockFiltered.map((item, idx) => {
+        return `
+          <div class="flex flex-col p-5 bg-slate-900/60 border border-slate-800/80 rounded-2xl relative overflow-hidden group">
+            <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-xl"></div>
+            
+            <div class="flex items-start justify-between gap-3 mb-4">
+              <div>
+                <h4 class="text-base font-bold text-white tracking-tight leading-snug">${item.name}</h4>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-xs text-slate-400 font-semibold flex items-center gap-1">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i> Qty Needed:
+                  </span>
+                  <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 font-extrabold text-xs border border-amber-500/20">
+                    Needs Pull (${item.quantity} current stock)
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-auto border-t border-slate-800/80 pt-4 flex items-center justify-between">
+              <div class="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+                <i data-lucide="map-pin" class="w-4 h-4 text-emerald-400"></i> Location: 
+                <span class="text-white font-bold">${item.location}</span>
+              </div>
+
+              <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 pulse-subtle"></span> Pull Flagged
+              </span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ----------------------------------------------------
+    // 5.5 TAB VIEW: SALES LOG SUMMARY
+    // ----------------------------------------------------
+    function initSalesLog() {
+      const stored = localStorage.getItem('corestore_sales_log_grouped');
+      if (stored) {
+        state.salesLog = JSON.parse(stored);
+      } else {
+        // Beautifully structured fallback dummy sessions
+        state.salesLog = [
+          {
+            sessionId: "SESSION-8291",
+            date: "2026-05-27",
+            time: "09:30:15",
+            customerName: "Axel",
+            customerPhone: "08123456789",
+            items: [
+              { itemName: "Organic Honeycrisp Apples", quantity: 2, total: 70000 },
+              { itemName: "Artisanal Sourdough Loaf", quantity: 1, total: 28000 }
+            ],
+            grandTotal: 98000
+          },
+          {
+            sessionId: "SESSION-4102",
+            date: "2026-05-27",
+            time: "14:40:02",
+            customerName: "Kikatsuu",
+            customerPhone: "08775432198",
+            items: [
+              { itemName: "Premium Cold Brew Coffee", quantity: 3, total: 126000 }
+            ],
+            grandTotal: 126000
+          }
+        ];
+        localStorage.setItem('corestore_sales_log_grouped', JSON.stringify(state.salesLog));
+      }
     }
 
     function renderSalesLog() {
-      const tbody = document.getElementById('sales-table-body');
+      const container = document.getElementById('sales-log-grouped-container');
+      
+      const statsTotalVal = document.getElementById('stats-total-value');
+      const statsTotalQty = document.getElementById('stats-total-qty');
+      const statsTotalTxns = document.getElementById('stats-total-txns');
+
       if (state.salesLog.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-16 text-center text-slate-500">No transactions recorded yet today.</td></tr>`; return;
+        container.innerHTML = `
+          <div class="py-16 text-center text-slate-500 bg-slate-900/10 border border-slate-800 rounded-2xl">
+            <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-2 stroke-1"></i>
+            <div class="text-sm font-medium">No customer checkout records found</div>
+          </div>
+        `;
+        statsTotalVal.innerText = "Rp 0";
+        statsTotalQty.innerText = "0 items";
+        statsTotalTxns.innerText = "0";
+        return;
       }
-      tbody.innerHTML = state.salesLog.map(log => `
-        <tr class="hover:bg-slate-900/30">
-          <td class="px-6 py-4 text-slate-400 font-medium">${log.time}</td>
-          <td class="px-6 py-4 text-white font-bold">${log.itemName}</td>
-          <td class="px-6 py-4 text-slate-300">${log.quantity}</td>
-          <td class="px-6 py-4 text-right text-emerald-400 font-bold">${formatIDR(log.total)}</td>
-        </tr>`).join('');
+
+      let totalVal = 0;
+      let totalQty = 0;
+
+      container.innerHTML = state.salesLog.map(session => {
+        totalVal += session.grandTotal;
+        
+        // Loop items inside grouping list block
+        const itemsRowsHtml = session.items.map(i => {
+          totalQty += i.quantity;
+          return `
+            <div class="flex items-center justify-between py-1.5 border-b border-slate-800/40 last:border-0 text-xs text-slate-300">
+              <div class="truncate pr-4">
+                <span class="font-semibold text-white">${i.itemName}</span>
+                <span class="ml-1.5 px-1.5 py-0.2 bg-slate-800 text-slate-400 font-bold rounded">x${i.quantity}</span>
+              </div>
+              <span class="font-mono font-bold text-slate-100 flex-shrink-0">${formatIDR(i.total)}</span>
+            </div>
+          `;
+        }).join('');
+
+        return `
+          <div class="p-5 bg-slate-900/50 border border-slate-800 rounded-2xl shadow-xl flex flex-col gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="user" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-extrabold text-white flex items-center gap-1.5">
+                    ${session.customerName || '<span class="text-slate-500 italic">Walk-in Customer</span>'}
+                    ${session.customerPhone ? `<span class="text-xs font-mono font-medium text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800/80">${session.customerPhone}</span>` : ''}
+                  </h4>
+                  <div class="text-[10px] text-slate-500 font-mono mt-0.5">${session.sessionId}</div>
+                </div>
+              </div>
+              
+              <div class="text-left sm:text-right flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 sm:gap-0">
+                <div class="text-xs font-bold text-slate-200">${session.time}</div>
+                <div class="text-[10px] font-medium text-slate-500">${session.date}</div>
+              </div>
+            </div>
+
+            <div class="bg-slate-950/60 border border-slate-850/80 rounded-xl p-3 flex flex-col">
+              <div class="text-[10px] font-black uppercase text-slate-500 tracking-wider mb-2">Item List Block</div>
+              ${itemsRowsHtml}
+            </div>
+
+            <div class="flex items-center justify-between pt-1 text-sm">
+              <span class="font-medium text-slate-400">Session Total</span>
+              <span class="font-black text-emerald-400 tracking-tight text-base">${formatIDR(session.grandTotal)}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      statsTotalVal.innerText = formatIDR(totalVal);
+      statsTotalQty.innerText = `${totalQty} ${totalQty === 1 ? 'item' : 'items'}`;
+      statsTotalTxns.innerText = state.salesLog.length;
     }
 
+    function clearSalesLog() {
+      if (confirm("Are you sure you want to clear the sales audit log from this device? This will not affect the daily spreadsheets.")) {
+        state.salesLog = [];
+        localStorage.removeItem('corestore_sales_log_grouped');
+        render();
+        showToast('success', 'Sales log cleared successfully');
+      }
+    }
+
+    // ----------------------------------------------------
+    // 6. UI ACTIONS INTERACTIVITY
+    // ----------------------------------------------------
     function showPinEntry() {
       document.getElementById('portal-intro-card').classList.add('hidden');
-      document.getElementById('portal-pin-card').classList.remove('hidden');
+      const pinCard = document.getElementById('portal-pin-card');
+      const input = document.getElementById('pin-input');
+      input.value = '';
+      pinCard.classList.remove('hidden');
+      setTimeout(() => input.focus(), 100);
     }
+
     function hidePinEntry() {
       document.getElementById('portal-pin-card').classList.add('hidden');
       document.getElementById('portal-intro-card').classList.remove('hidden');
     }
+
     function verifyAdminPin(event) {
       event.preventDefault();
-      if (document.getElementById('pin-input').value === '2411') {
-        state.role = 'admin'; state.activeTab = 'cashier'; render();
-        showToast('success', 'Access granted.');
+      const input = document.getElementById('pin-input');
+      if (input.value === '2411') {
+        document.getElementById('portal-pin-card').classList.add('hidden');
+        state.role = 'admin';
+        state.activeTab = 'cashier';
+        render();
+        showToast('success', 'Access granted. Welcome back, Admin!');
       } else {
-        showToast('error', 'Invalid Access PIN.');
+        showToast('error', '❌ Invalid Access PIN.');
+        input.value = '';
+        input.focus();
       }
     }
 
-    function switchTab(tabName) { state.activeTab = tabName; render(); }
-    function logout() { state.role = null; state.cart = {}; render(); }
-    function updateSearch(val) { state.searchQuery = val; renderCashier(); }
-    
-    function toggleNewItemForm() {
-      const container = document.getElementById('new-item-form-container');
-      state.isNewFormOpen = !state.isNewFormOpen;
-      container.style.maxHeight = state.isNewFormOpen ? container.scrollHeight + "px" : "0";
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      render();
     }
 
-    function addToCart(itemName) {
-      const item = state.inventory.find(i => i.name === itemName);
-      if (!item) return;
-      if (!state.cart[itemName]) {
-        state.cart[itemName] = { quantity: 1, item: item };
-      } else if (state.cart[itemName].quantity < item.quantity) {
-        state.cart[itemName].quantity += 1;
-      } else {
-        showToast('error', 'Cannot exceed available stock.'); return;
-      }
+    // Custom logout cleanup updates fields correctly
+    function logout() {
+      state.role = null;
+      state.cart = {};
+      const nameInput = document.getElementById('cart-customer-name');
+      const phoneInput = document.getElementById('cart-customer-phone');
+      if (nameInput) nameInput.value = '';
+      if (phoneInput) phoneInput.value = '';
+      render();
+      showToast('success', 'Logged out successfully');
+    }
+
+    function updateSearch(val) {
+      state.searchQuery = val;
       renderCashier();
     }
 
-    function incrementCartItem(itemName) { addToCart(itemName); }
+    function toggleNewItemForm() {
+      const container = document.getElementById('new-item-form-container');
+      const chevron = document.getElementById('add-form-chevron');
+      
+      state.isNewFormOpen = !state.isNewFormOpen;
+      
+      if (state.isNewFormOpen) {
+        container.style.maxHeight = container.scrollHeight + "px";
+        container.classList.remove('border-t-slate-800/0');
+        container.classList.add('border-t-slate-800/80');
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        container.style.maxHeight = "0";
+        container.classList.remove('border-t-slate-800/80');
+        container.classList.add('border-t-slate-800/0');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    // Cart Handlers
+    function addToCart(itemName) {
+      const item = state.inventory.find(i => i.name === itemName);
+      if (!item) return;
+
+      if (!state.cart[itemName]) {
+        state.cart[itemName] = { quantity: 1, item: item };
+      } else {
+        const entry = state.cart[itemName];
+        if (entry.quantity < item.quantity) {
+          entry.quantity += 1;
+        } else {
+          showToast('error', `Cannot exceed available shelf stock (${item.quantity})`);
+          return;
+        }
+      }
+      renderCashier();
+      showToast('success', `Added ${itemName} to checkout cart`, 1200);
+    }
+
+    function incrementCartItem(itemName) {
+      const entry = state.cart[itemName];
+      if (entry && entry.quantity < entry.item.quantity) {
+        entry.quantity += 1;
+        renderCashier();
+      } else {
+        showToast('error', `Cannot exceed available shelf stock (${entry.item.quantity})`);
+      }
+    }
+
     function decrementCartItem(itemName) {
-      if (state.cart[itemName]) {
-        if (state.cart[itemName].quantity > 1) {
-          state.cart[itemName].quantity -= 1;
+      const entry = state.cart[itemName];
+      if (entry) {
+        if (entry.quantity > 1) {
+          entry.quantity -= 1;
         } else {
           delete state.cart[itemName];
         }
@@ -579,98 +1049,254 @@
       }
     }
 
+    function removeCartItem(itemName) {
+      if (state.cart[itemName]) {
+        delete state.cart[itemName];
+        renderCashier();
+        showToast('success', `Removed ${itemName} from cart`);
+      }
+    }
+
+    // Worker resolution simulation
     function resolveRestockItemLocal(itemName) {
       const item = state.inventory.find(i => i.name === itemName);
       if (item) {
         item.needsRestock = false;
+        
+        const payload = {
+          action: 'updateInventory',
+          itemName: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          location: item.location,
+          needsRestock: false
+        };
+        
         fetch(SCRIPT_URL, {
-          method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'updateInventory', itemName: item.name, quantity: item.quantity, price: item.price, location: item.location, needsRestock: false })
-        });
-        render(); showToast('success', `Restocked: ${itemName}`);
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch(err => console.warn("Worker silent update error:", err));
+
+        render();
+        showToast('success', `Restocked: ${itemName}`);
       }
     }
 
+    // ----------------------------------------------------
+    // 7. TOAST NOTIFICATION UTILITY
+    // ----------------------------------------------------
     function showToast(type, message, duration = 3000) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
-      toast.className = `p-4 rounded-2xl border text-sm font-semibold bg-slate-900 shadow-xl text-white ${type==='success'?'border-emerald-500/30':'border-red-500/30'}`;
-      toast.innerText = message;
+      
+      let typeBg = 'bg-slate-900 border-slate-800';
+      let icon = 'info';
+      let iconColor = 'text-brand-400';
+
+      if (type === 'success') {
+        typeBg = 'bg-slate-900/95 border-emerald-500/20 shadow-emerald-950/20';
+        icon = 'check-circle';
+        iconColor = 'text-emerald-400';
+      } else if (type === 'error') {
+        typeBg = 'bg-slate-900/95 border-red-500/20 shadow-red-950/20';
+        icon = 'alert-triangle';
+        iconColor = 'text-red-400';
+      } else if (type === 'warning') {
+        typeBg = 'bg-slate-900/95 border-amber-500/20 shadow-amber-950/20';
+        icon = 'help-circle';
+        iconColor = 'text-amber-400';
+      }
+
+      toast.className = `flex items-center gap-3 p-4 rounded-2xl border shadow-xl transition-all duration-350 transform translate-y-4 opacity-0 pointer-events-auto ${typeBg}`;
+      toast.innerHTML = `
+        <div class="flex-shrink-0 ${iconColor}">
+          <i data-lucide="${icon}" class="w-5 h-5"></i>
+        </div>
+        <div class="flex-1 text-sm font-medium text-slate-100">${message}</div>
+      `;
+
       container.appendChild(toast);
-      setTimeout(() => toast.remove(), duration);
+      lucide.createIcons();
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => {
+          toast.remove();
+        }, 350);
+      }, duration);
     }
 
-    function showLoader(show, msg = "Syncing...") {
+    function showLoader(show, msg = "Syncing with Google Database...") {
+      state.loading = show;
       const loader = document.getElementById('loading-overlay');
-      document.getElementById('loading-message').innerText = msg;
-      loader.className = show ? "fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center transition-all duration-300" : "hidden";
+      const loaderMsg = document.getElementById('loading-message');
+      
+      if (show) {
+        loaderMsg.innerText = msg;
+        loader.classList.remove('opacity-0', 'pointer-events-none');
+      } else {
+        loader.classList.add('opacity-0', 'pointer-events-none');
+      }
     }
 
+    // ----------------------------------------------------
+    // 8. DATA SYNC & API INTEGRATIONS
+    // ----------------------------------------------------
     function normalizeInventoryData(raw) {
-      const arr = Array.isArray(raw) ? raw : (raw.items || raw.data || []);
-      return arr.map(i => ({
-        name: i.name || 'Unnamed',
-        price: parseFloat(i.price) || 0,
-        quantity: parseInt(i.quantity) || 0,
-        location: i.location === 'Storage' ? 'Gudang' : (i.location==='Store'?'Toko':i.location),
-        needsRestock: i.needsRestock === true || String(i.needsRestock).toLowerCase() === 'true'
-      }));
+      if (!raw) return [];
+      
+      let rawArr = [];
+      if (Array.isArray(raw)) {
+        rawArr = raw;
+      } else if (raw.items && Array.isArray(raw.items)) {
+        rawArr = raw.items;
+      } else if (raw.data && Array.isArray(raw.data)) {
+        rawArr = raw.data;
+      } else {
+        console.error("Unknown API response shape:", raw);
+        return [];
+      }
+
+      return rawArr.map(item => {
+        let loc = item.location || 'Empty';
+        if (loc === 'Storage') loc = 'Gudang';
+        if (loc === 'Store') loc = 'Toko';
+        
+        return {
+          name: item.name || 'Unnamed Item',
+          price: parseFloat(item.price) || 0.0,
+          quantity: parseInt(item.quantity) === 0 ? 0 : (parseInt(item.quantity) || 0),
+          location: loc,
+          needsRestock: String(item.needsRestock).toLowerCase() === 'true' || item.needsRestock === true || item.needsRestock === 1
+        };
+      });
     }
 
     async function refreshData(showSpinner = true) {
-      if (showSpinner) showLoader(true, "Fetching inventory database...");
+      if (showSpinner) showLoader(true, "Fetching live inventory...");
+      
+      const statusPill = document.getElementById('connection-status-pill');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+
       try {
-        const res = await fetch(SCRIPT_URL, { method: 'GET' });
-        state.inventory = normalizeInventoryData(await res.json());
-        document.getElementById('connection-status-pill').innerText = "🟢 Syncing with Live Database";
+        const res = await fetch(SCRIPT_URL, {
+          method: 'GET',
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error(`HTTP status code ${res.status}`);
+
+        const text = await res.text();
+        const dataObj = JSON.parse(text);
+        
+        state.inventory = normalizeInventoryData(dataObj);
+        state.isUsingMockData = false;
+
+        statusPill.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-subtle"></span>
+          <span>Syncing with Live DB (Google App Script)</span>
+        `;
+        statusPill.className = "mt-8 px-4 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/50 text-xs text-emerald-400 flex items-center gap-2 max-w-xs text-center z-10 transition-all duration-300";
+
       } catch (err) {
+        console.error("API GET Error, utilizing fallback MOCK_DATA:", err);
+        
         state.inventory = JSON.parse(JSON.stringify(MOCK_DATA));
-        document.getElementById('connection-status-pill').innerText = "⚠️ Offline Demo Mode Enabled";
+        state.isUsingMockData = true;
+        
+        statusPill.innerHTML = `
+          <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+          <span>Disconnected. Running in Local Demo Mode.</span>
+        `;
+        statusPill.className = "mt-8 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-xs text-amber-400 flex items-center gap-2 max-w-xs text-center z-10 transition-all duration-300";
+        
+        showToast('warning', '⚠️ Failed to connect to Google Sheet. Using local database.');
       } finally {
         if (showSpinner) showLoader(false);
         render();
       }
     }
 
-    async function apiPost(payload, successMsg) {
-      showLoader(true, "Uploading adjustments...");
+    async function apiPost(payload, successMsg = "Changes saved to database") {
+      showLoader(true, "Uploading changes...");
+      
       try {
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        applyPayloadToLocalState(payload);
         showToast('success', successMsg);
-        setTimeout(() => refreshData(false), 1000);
+        
+        setTimeout(() => { refreshData(false); }, 1200);
       } catch (err) {
-        showToast('error', "Network write failed.");
+        console.error("API POST Error:", err);
+        showToast('error', "Could not save adjustments to server. Saving locally.");
+        applyPayloadToLocalState(payload);
+        render();
       } finally {
         showLoader(false);
       }
     }
 
-    // COMPLETE UPGRADED CHECKOUT TRANSACTION FUNCTION WITH AUTO-PRINT & DRIVE ARCHIVING
+    function applyPayloadToLocalState(payload) {
+      if (payload.action === 'newSale') {
+        const item = state.inventory.find(i => i.name.toLowerCase() === payload.itemName.toLowerCase());
+        if (item) {
+          item.quantity = Math.max(0, item.quantity - payload.quantity);
+        }
+      } else if (payload.action === 'updateInventory') {
+        const item = state.inventory.find(i => i.name.toLowerCase() === payload.itemName.toLowerCase());
+        if (item) {
+          item.quantity = payload.quantity;
+          item.price = payload.price;
+          item.location = payload.location;
+          item.needsRestock = payload.needsRestock;
+        } else {
+          state.inventory.push({
+            name: payload.itemName,
+            price: parseFloat(payload.price) || 0.0,
+            quantity: parseInt(payload.quantity) || 0,
+            location: payload.location || 'Empty',
+            needsRestock: !!payload.needsRestock
+          });
+        }
+      }
+    }
+
+    // Trigger Grouped Profile Checkout Transaction Task
     async function checkoutSale() {
       const items = Object.values(state.cart);
       if (items.length === 0) return;
 
+      const customerNameInput = document.getElementById('cart-customer-name');
+      const customerPhoneInput = document.getElementById('cart-customer-phone');
+      
+      const customerName = customerNameInput ? customerNameInput.value.trim() : "";
+      const customerPhone = customerPhoneInput ? customerPhoneInput.value.trim() : "";
+
       showLoader(true, "Registering checkout transactions...");
 
+      let successCount = 0;
       const today = new Date();
       const dateStr = today.toISOString().split('T')[0];
       const timeStr = today.toTimeString().split(' ')[0];
-      const txnId = "TXN-" + Math.floor(1000 + Math.random() * 9000);
 
-      // Initialize the receipt raw string layout structure
-      let receiptText = `========================================\n`;
-      receiptText += `           UD.SEMERU PUTRA            \n`;
-      receiptText += `            AJUNG PORTAL              \n`;
-      receiptText += `========================================\n`;
-      receiptText += `Receipt ID : ${txnId}\n`;
-      receiptText += `Date       : ${dateStr}\n`;
-      receiptText += `Time       : ${timeStr}\n`;
-      receiptText += `Operator   : Admin\n`;
-      receiptText += `----------------------------------------\n`;
+      // Array mapping for grouped log session layout definition
+      const sessionLoggedItems = [];
+      let totalSessionSum = 0;
 
-      let grandTotal = 0;
-
-      // Loop through cart entries to submit them to the Spreadsheet database backend
       for (const entry of items) {
         const payload = {
           action: 'newSale',
@@ -680,92 +1306,135 @@
         };
 
         try {
-          await fetch(SCRIPT_URL, { 
-            method: 'POST', 
-            mode: 'no-cors', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(payload) 
+          await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
           });
           
-          // Append entry details into history state log array locally
-          state.salesLog.unshift({ time: timeStr, itemName: entry.item.name, quantity: entry.quantity, total: payload.totalPrice });
+          applyPayloadToLocalState(payload);
+          successCount++;
           
+          // Append entry item context structure
           const itemTotal = entry.item.price * entry.quantity;
-          grandTotal += itemTotal;
+          totalSessionSum += itemTotal;
+          sessionLoggedItems.push({
+            itemName: entry.item.name,
+            quantity: entry.quantity,
+            total: itemTotal
+          });
           
-          // Format line text entry for structural print layouts
-          receiptText += `${entry.item.name}\n`;
-          receiptText += `  ${entry.quantity} x ${(entry.item.price).toString().padEnd(10)} = Rp ${itemTotal.toLocaleString('id-ID')}\n`;
         } catch (err) {
-          console.error(err);
+          console.error("Sale POST Error for item " + entry.item.name + ":", err);
+          applyPayloadToLocalState(payload);
         }
       }
 
-      receiptText += `----------------------------------------\n`;
-      receiptText += `GRAND TOTAL : Rp ${grandTotal.toLocaleString('id-ID')}\n`;
-      receiptText += `========================================\n`;
-      receiptText += `    Thank you for your transaction!    \n`;
-      receiptText += `========================================\n`;
-
-      // Dispatch receipt plain text file directly into the CoreStore_Receipts Google Drive folder
-      try {
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'saveReceipt',
-            fileName: `${dateStr}_${txnId}.txt`,
-            receiptText: receiptText
-          })
+      // Grouped sales history logic push engine execution 
+      if (sessionLoggedItems.length > 0) {
+        const uniqueSessionId = "SESSION-" + Math.floor(1000 + Math.random() * 9000);
+        state.salesLog.unshift({
+          sessionId: uniqueSessionId,
+          date: dateStr,
+          time: timeStr,
+          customerName: customerName,
+          customerPhone: customerPhone,
+          items: sessionLoggedItems,
+          grandTotal: totalSessionSum
         });
-      } catch (driveErr) {
-        console.warn("Google Drive archive failed:", driveErr);
+        localStorage.setItem('corestore_sales_log_grouped', JSON.stringify(state.salesLog));
       }
 
-      localStorage.setItem('corestore_sales_log', JSON.stringify(state.salesLog));
       showLoader(false);
-      showToast('success', "🛒 Checkout recorded & saved to Google Drive!");
+      
+      if (successCount === items.length) {
+        showToast('success', `🛒 Checkout completed! Registered ${successCount} items.`);
+      } else if (successCount > 0) {
+        showToast('warning', `⚠️ Checkout completed with warnings. Registered ${successCount}/${items.length} items.`);
+      } else {
+        showToast('error', `❌ Network connection error. Updates saved locally.`);
+      }
 
-      // Open a browser print window to let the user output the document physically
-      const printWindow = window.open('', '_blank', 'width=450,height=600');
-      printWindow.document.write('<html><head><title>Print Receipt</title></head><body style="margin:0;padding:20px;"><pre style="font-family:monospace;font-size:13px;line-height:1.4;color:#000;">' + receiptText.replace(/\n/g, '<br>') + '</pre></body></html>');
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-      }, 500);
-
+      // Reset profile values cleanly
       state.cart = {};
-      refreshData(true);
+      if (customerNameInput) customerNameInput.value = '';
+      if (customerPhoneInput) customerPhoneInput.value = '';
+      
+      render();
+      setTimeout(() => { refreshData(false); }, 1200);
     }
 
     function updateRowInventory(itemName, idx) {
-      const qty = parseInt(document.getElementById(`qty-input-${idx}`).value) || 0;
-      const loc = document.getElementById(`location-select-${idx}`).value;
-      const restock = document.getElementById(`restock-toggle-${idx}`).checked;
-      
-      const item = state.inventory.find(i => i.name === itemName);
-      apiPost({ action: 'updateInventory', itemName, quantity: qty, price: item?item.price:0, location: loc, needsRestock: restock }, "Database entry synced.");
+      const qtyInput = document.getElementById(`qty-input-${idx}`);
+      const priceInput = document.getElementById(`price-input-${idx}`);
+      const locSelect = document.getElementById(`location-select-${idx}`);
+      const restockCheck = document.getElementById(`restock-toggle-${idx}`);
+
+      if (!qtyInput || !priceInput || !locSelect || !restockCheck) return;
+
+      const updatedQty = parseInt(qtyInput.value) === 0 ? 0 : (parseInt(qtyInput.value) || 0);
+      const updatedPrice = parseFloat(priceInput.value) || 0;
+      const updatedLoc = locSelect.value;
+      const updatedRestock = restockCheck.checked;
+
+      const payload = {
+        action: 'updateInventory',
+        itemName: itemName,
+        quantity: updatedQty,
+        price: updatedPrice,
+        location: updatedLoc,
+        needsRestock: updatedRestock
+      };
+
+      apiPost(payload, `⚙️ Updated item details: ${itemName}`);
     }
 
     function submitNewItem(event) {
       event.preventDefault();
-      const form = document.getElementById('new-item-form');
-      const data = new FormData(form);
       
-      apiPost({
+      const form = document.getElementById('new-item-form');
+      const formData = new FormData(form);
+
+      const newItemName = formData.get('name').trim();
+      const newItemPrice = parseFloat(formData.get('price')) || 0;
+      const newItemQty = parseInt(formData.get('quantity')) || 0;
+      const newItemLoc = formData.get('location');
+
+      if (!newItemName) {
+        showToast('error', 'Please enter a valid product name');
+        return;
+      }
+
+      if (state.inventory.some(i => i.name.toLowerCase() === newItemName.toLowerCase())) {
+        showToast('error', `"${newItemName}" already exists in the inventory`);
+        return;
+      }
+
+      const payload = {
         action: 'updateInventory',
-        itemName: data.get('name'),
-        price: parseFloat(data.get('price')) || 0,
-        quantity: parseInt(data.get('quantity')) || 0,
-        location: data.get('location'),
+        itemName: newItemName,
+        price: newItemPrice,
+        quantity: newItemQty,
+        location: newItemLoc,
         needsRestock: false
-      }, "🆕 Product saved to spreadsheet catalog.").then(() => { form.reset(); toggleNewItemForm(); });
+      };
+
+      apiPost(payload, `🆕 Product added successfully: ${newItemName}`).then(() => {
+        form.reset();
+        toggleNewItemForm();
+        render();
+      });
     }
 
-    window.addEventListener('DOMContentLoaded', () => refreshData(true));
+    // ----------------------------------------------------
+    // 9. APP START INITIALIZATION
+    // ----------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      initSalesLog();
+      refreshData();
+    });
+
   </script>
 </body>
 </html>
