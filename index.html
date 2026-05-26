@@ -1151,12 +1151,15 @@
       if (showSpinner) showLoader(true, "Fetching live inventory...");
       
       const statusPill = document.getElementById('connection-status-pill');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
 
       try {
         const res = await fetch(SCRIPT_URL, {
           method: 'GET',
-          headers: { 'Accept': 'application/json' }
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (!res.ok) throw new Error(`HTTP status code ${res.status}`);
 
