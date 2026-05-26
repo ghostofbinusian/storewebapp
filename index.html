@@ -683,8 +683,18 @@
               ${item.name}
             </td>
             <!-- Unit Price -->
-            <td class="px-6 py-4 font-medium text-slate-400 whitespace-nowrap">
-              ${formatIDR(item.price)}
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 focus-within:border-brand-500 max-w-[120px]">
+                <span class="text-xs text-slate-500 font-bold">Rp</span>
+                <input 
+                  type="number" 
+                  id="price-input-${idx}" 
+                  value="${item.price}" 
+                  min="0"
+                  step="1"
+                  class="w-full bg-transparent text-slate-200 font-semibold focus:outline-none text-sm"
+                >
+              </div>
             </td>
             <!-- Quantity adjustment input -->
             <td class="px-6 py-4 whitespace-nowrap">
@@ -758,7 +768,7 @@
 
     function renderRestock() {
       const restockList = document.getElementById('restock-list');
-      const restockFiltered = state.inventory.filter(item => item.needsRestock);
+      const restockFiltered = state.inventory.filter(item => item.needsRestock || item.quantity <= 0);
 
       if (restockFiltered.length === 0) {
         restockList.innerHTML = `
@@ -1322,24 +1332,22 @@
     // Trigger Single Table Row Update
     function updateRowInventory(itemName, idx) {
       const qtyInput = document.getElementById(`qty-input-${idx}`);
+      const priceInput = document.getElementById(`price-input-${idx}`);
       const locSelect = document.getElementById(`location-select-${idx}`);
       const restockCheck = document.getElementById(`restock-toggle-${idx}`);
 
-      if (!qtyInput || !locSelect || !restockCheck) return;
+      if (!qtyInput || !priceInput || !locSelect || !restockCheck) return;
 
       const updatedQty = parseInt(qtyInput.value) === 0 ? 0 : (parseInt(qtyInput.value) || 0);
+      const updatedPrice = parseFloat(priceInput.value) || 0;
       const updatedLoc = locSelect.value;
       const updatedRestock = restockCheck.checked;
-
-      // Find current price from local state so it doesn't get set to 0 or NaN
-      const item = state.inventory.find(i => i.name === itemName);
-      const itemPrice = item ? item.price : 0;
 
       const payload = {
         action: 'updateInventory',
         itemName: itemName,
         quantity: updatedQty,
-        price: itemPrice,
+        price: updatedPrice,
         location: updatedLoc,
         needsRestock: updatedRestock
       };
