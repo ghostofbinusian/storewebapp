@@ -9,7 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -381,7 +380,7 @@
       const customerName = document.getElementById('cart-customer-name').value.trim() || "Walk-in Customer";
       const customerPhone = document.getElementById('cart-customer-phone').value.trim();
 
-      showLoader(true, "Logging to Sheets & generating PDF invoice...");
+      showLoader(true, "Logging to Sheets...");
 
       const payload = {
         action: 'newSale',
@@ -393,87 +392,9 @@
       };
 
       try {
-        // 1. Save data safely to Google Sheets
         await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
         
-        // 2. GENERATE OFFICIAL STORE PDF INVOICE (REBRANDED TO UD.SEMERUPUTRA)
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a6' }); 
-        const invoiceNum = Math.floor(100000 + Math.random() * 900000);
-        const dateStr = new Date().toLocaleDateString('id-ID');
-
-        // Styling & Header Brand
-        doc.setFillColor(124, 58, 237); 
-        doc.rect(0, 0, 105, 12, 'F'); 
-        doc.setTextColor(255, 255, 255);
-        doc.setFont("Outfit", "bold");
-        doc.setFontSize(12); // Slightly reduced font size to clear layout space
-        doc.text("UD.SEMERUPUTRA INVOICE", 6, 8);
-
-        // Meta details
-        doc.setTextColor(51, 65, 85);
-        doc.setFontSize(8);
-        doc.setFont("Helvetica", "normal");
-        doc.text(`Invoice Ref: #${invoiceNum}`, 6, 20);
-        doc.text(`Date: ${dateStr}`, 6, 24);
-        doc.text(`Customer: ${customerName}`, 6, 28);
-        if(customerPhone) doc.text(`Phone: ${customerPhone}`, 6, 32);
-
-        // Table Header Accent Lines
-        doc.setDrawColor(226, 232, 240);
-        doc.line(6, 36, 99, 36);
-        doc.setFont("Helvetica", "bold");
-        doc.text("Item Details", 6, 40);
-        doc.text("Qty", 75, 40);
-        doc.text("Total", 85, 40);
-        doc.line(6, 42, 99, 42);
-
-        // Populate purchased rows dynamically
-        doc.setFont("Helvetica", "normal");
-        let yPosition = 47;
-        let grandTotalSum = 0;
-
-        cartItems.forEach(entry => {
-          let currentItemCost = entry.item.price * entry.quantity;
-          grandTotalSum += currentItemCost;
-          
-          doc.text(entry.item.name, 6, yPosition, { maxWidth: 60 });
-          doc.text(entry.quantity.toString(), 76, yPosition);
-          doc.text(formatIDR(currentItemCost).replace("Rp", "").trim(), 85, yPosition);
-          yPosition += 6;
-        });
-
-        // Subtotal and Closing blocks
-        doc.line(6, yPosition, 99, yPosition);
-        yPosition += 6;
-        doc.setFont("Helvetica", "bold");
-        doc.text("Grand Total:", 55, yPosition);
-        doc.text(formatIDR(grandTotalSum), 75, yPosition);
-
-        yPosition += 12;
-        doc.setFont("Helvetica", "oblique");
-        doc.setFontSize(7);
-        doc.setTextColor(148, 163, 184);
-        doc.text("Thank you for choosing UD.SemeruPutra. All logs are digital.", 52, yPosition, { align: "center" });
-
-        // 3. Trigger document save download sheet
-        doc.save(`Invoice_${invoiceNum}.pdf`);
-
-        // 4. Trigger messaging redirect to WhatsApp
-        if (customerPhone) {
-          let formattedPhone = customerPhone.replace(/[^0-9]/g, '');
-          if (formattedPhone.startsWith('0')) {
-            formattedPhone = '62' + formattedPhone.slice(1);
-          }
-
-          let waMsg = `✉️ *UD.SemeruPutra Digital Receipt*\n\n`;
-          waMsg += `Hello *${customerName}*, thank you for your order! Your official invoice file \`Invoice_${invoiceNum}.pdf\` has been generated successfully and downloaded to our storefront terminal. Sending copy over directly...`;
-          
-          const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(waMsg)}`;
-          window.open(whatsappUrl, '_blank');
-        }
-
-        showToast('success', 'Official Invoice Issued!');
+        showToast('success', 'Sale successfully saved!');
         state.cart = {};
         document.getElementById('cart-customer-name').value = '';
         document.getElementById('cart-customer-phone').value = '';
