@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Storefront Management System</title>
+  <title>UD.SemeruPutra Storefront System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -38,7 +39,7 @@
 
   <div id="loading-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
     <div class="w-16 h-16 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
-    <p id="loading-message" class="mt-4 text-slate-300 font-medium text-sm tracking-wide">Syncing with Google Database...</p>
+    <p id="loading-message" class="mt-4 text-slate-300 font-medium text-sm tracking-wide">Syncing with Database...</p>
   </div>
 
   <div class="min-h-full flex flex-col">
@@ -48,7 +49,7 @@
         <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 mb-4">
           <i data-lucide="store" class="w-8 h-8 text-white"></i>
         </div>
-        <h1 class="text-4xl font-extrabold tracking-tight text-white">Core<span class="text-brand-400">Store</span></h1>
+        <h1 class="text-3xl font-extrabold tracking-tight text-white">UD.<span class="text-brand-400">SemeruPutra</span></h1>
       </div>
 
       <div class="w-full max-w-md px-4">
@@ -72,7 +73,7 @@
         <div class="max-w-7xl mx-auto px-4">
           <div class="flex items-center justify-between h-16">
             <div class="flex items-center gap-2">
-              <span class="text-lg font-bold text-white">Core<span class="text-brand-400">Store</span></span>
+              <span class="text-base font-bold text-white">UD.<span class="text-brand-400">SemeruPutra</span></span>
             </div>
             
             <nav class="flex space-x-1">
@@ -100,8 +101,8 @@
         <div id="tab-content-cashier" class="tab-pane hidden flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
           <div class="flex-1 flex flex-col min-h-0 bg-slate-900/30 border border-slate-800 rounded-2xl p-4">
             <div class="mb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-              <h2 class="text-xl font-bold text-white flex items-center gap-2"><i data-lucide="layout-grid" class="w-5 h-5 text-brand-400"></i> Register Catalog</h2>
-              <input oninput="updateSearch(this.value)" type="text" placeholder="Search catalog..." class="w-full sm:max-w-xs px-4 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-sm">
+              <h2 class="text-xl font-bold text-white flex items-center gap-2"><i data-lucide="layout-grid" class="w-5 h-5 text-brand-400"></i> Catalog</h2>
+              <input oninput="updateSearch(this.value)" type="text" placeholder="Search products..." class="w-full sm:max-w-xs px-4 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-sm">
             </div>
             <div class="flex-1 overflow-y-auto no-scrollbar min-h-0">
               <div id="cashier-product-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
@@ -210,7 +211,6 @@
       document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
       document.getElementById(`tab-content-${state.activeTab}`).classList.remove('hidden');
       
-      // Update Active Navigation Tab Colors
       ['cashier', 'storage', 'restock', 'sales'].forEach(tab => {
         const btn = document.getElementById(`tab-btn-${tab}`);
         btn.className = state.activeTab === tab 
@@ -311,11 +311,10 @@
       `).join('');
     }
 
-    // NEW CALENDAR DATABASE SYNC FETCH
     async function fetchSalesForDate(dateString) {
       if (!dateString) return;
       state.selectedSalesDate = dateString;
-      showLoader(true, `Reading log files for date: ${dateString}...`);
+      showLoader(true, `Reading files for date: ${dateString}...`);
       
       try {
         const res = await fetch(`${SCRIPT_URL}?getSalesDate=${dateString}`);
@@ -379,28 +378,106 @@
       const cartItems = Object.values(state.cart);
       if (cartItems.length === 0) return;
 
-      const customerName = document.getElementById('cart-customer-name').value.trim();
+      const customerName = document.getElementById('cart-customer-name').value.trim() || "Walk-in Customer";
       const customerPhone = document.getElementById('cart-customer-phone').value.trim();
 
-      showLoader(true, "Logging to Sheets database...");
+      showLoader(true, "Logging to Sheets & generating PDF invoice...");
 
       const payload = {
         action: 'newSale',
-        customerName: customerName || "Walk-in Customer",
-        customerPhone: customerPhone || "",
+        customerName: customerName,
+        customerPhone: customerPhone,
         items: cartItems.map(entry => ({
           itemName: entry.item.name, quantity: entry.quantity, totalPrice: entry.item.price * entry.quantity
         }))
       };
 
       try {
+        // 1. Save data safely to Google Sheets
         await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-        showToast('success', 'Sale saved to spreadsheet database!');
+        
+        // 2. GENERATE OFFICIAL STORE PDF INVOICE (REBRANDED TO UD.SEMERUPUTRA)
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a6' }); 
+        const invoiceNum = Math.floor(100000 + Math.random() * 900000);
+        const dateStr = new Date().toLocaleDateString('id-ID');
+
+        // Styling & Header Brand
+        doc.setFillColor(124, 58, 237); 
+        doc.rect(0, 0, 105, 12, 'F'); 
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("Outfit", "bold");
+        doc.setFontSize(12); // Slightly reduced font size to clear layout space
+        doc.text("UD.SEMERUPUTRA INVOICE", 6, 8);
+
+        // Meta details
+        doc.setTextColor(51, 65, 85);
+        doc.setFontSize(8);
+        doc.setFont("Helvetica", "normal");
+        doc.text(`Invoice Ref: #${invoiceNum}`, 6, 20);
+        doc.text(`Date: ${dateStr}`, 6, 24);
+        doc.text(`Customer: ${customerName}`, 6, 28);
+        if(customerPhone) doc.text(`Phone: ${customerPhone}`, 6, 32);
+
+        // Table Header Accent Lines
+        doc.setDrawColor(226, 232, 240);
+        doc.line(6, 36, 99, 36);
+        doc.setFont("Helvetica", "bold");
+        doc.text("Item Details", 6, 40);
+        doc.text("Qty", 75, 40);
+        doc.text("Total", 85, 40);
+        doc.line(6, 42, 99, 42);
+
+        // Populate purchased rows dynamically
+        doc.setFont("Helvetica", "normal");
+        let yPosition = 47;
+        let grandTotalSum = 0;
+
+        cartItems.forEach(entry => {
+          let currentItemCost = entry.item.price * entry.quantity;
+          grandTotalSum += currentItemCost;
+          
+          doc.text(entry.item.name, 6, yPosition, { maxWidth: 60 });
+          doc.text(entry.quantity.toString(), 76, yPosition);
+          doc.text(formatIDR(currentItemCost).replace("Rp", "").trim(), 85, yPosition);
+          yPosition += 6;
+        });
+
+        // Subtotal and Closing blocks
+        doc.line(6, yPosition, 99, yPosition);
+        yPosition += 6;
+        doc.setFont("Helvetica", "bold");
+        doc.text("Grand Total:", 55, yPosition);
+        doc.text(formatIDR(grandTotalSum), 75, yPosition);
+
+        yPosition += 12;
+        doc.setFont("Helvetica", "oblique");
+        doc.setFontSize(7);
+        doc.setTextColor(148, 163, 184);
+        doc.text("Thank you for choosing UD.SemeruPutra. All logs are digital.", 52, yPosition, { align: "center" });
+
+        // 3. Trigger document save download sheet
+        doc.save(`Invoice_${invoiceNum}.pdf`);
+
+        // 4. Trigger messaging redirect to WhatsApp
+        if (customerPhone) {
+          let formattedPhone = customerPhone.replace(/[^0-9]/g, '');
+          if (formattedPhone.startsWith('0')) {
+            formattedPhone = '62' + formattedPhone.slice(1);
+          }
+
+          let waMsg = `✉️ *UD.SemeruPutra Digital Receipt*\n\n`;
+          waMsg += `Hello *${customerName}*, thank you for your order! Your official invoice file \`Invoice_${invoiceNum}.pdf\` has been generated successfully and downloaded to our storefront terminal. Sending copy over directly...`;
+          
+          const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(waMsg)}`;
+          window.open(whatsappUrl, '_blank');
+        }
+
+        showToast('success', 'Official Invoice Issued!');
         state.cart = {};
         document.getElementById('cart-customer-name').value = '';
         document.getElementById('cart-customer-phone').value = '';
         
-        // If they are checking out on the date currently viewed in the calendar, refresh the log view automatically
         if (state.selectedSalesDate === new Date().toISOString().split('T')[0]) {
           fetchSalesForDate(state.selectedSalesDate);
         }
@@ -450,7 +527,6 @@
       state.activeTab = tab; 
       render(); 
       if (tab === 'sales' && !state.selectedSalesDate) {
-        // Default calendar input element to today's date automatically on load
         const localTodayStr = new Date().toISOString().split('T')[0];
         document.getElementById('sales-calendar-input').value = localTodayStr;
         fetchSalesForDate(localTodayStr);
