@@ -335,7 +335,6 @@
       showLoader(true, `Reading files for date: ${dateString}...`);
       
       try {
-        // Cache busting dynamic timestamp addition to fix early loading bugs
         const res = await fetch(`${SCRIPT_URL}?getSalesDate=${dateString}&_=${new Date().getTime()}`);
         const result = await res.json();
         const container = document.getElementById('sales-log-grouped-container');
@@ -383,7 +382,6 @@
     async function refreshData(showSpinner = true) {
       if (showSpinner) showLoader(true, "Fetching latest live database...");
       try {
-        // Appended cache-breaker string prevents browsers from loading stale spreadsheet evaluations
         const res = await fetch(`${SCRIPT_URL}?_=${new Date().getTime()}`);
         const data = await res.json();
         state.inventory = data.map(item => ({
@@ -418,33 +416,33 @@
       };
 
       try {
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await res.json();
         
-        // Optimistic State Update: Deduct stock values inside the browser instantly without waiting for the server reload loop
-        cartItems.forEach(entry => {
-          const invItem = state.inventory.find(i => i.name === entry.item.name);
-          if (invItem) {
-            invItem.quantity = Math.max(0, invItem.quantity - entry.quantity);
-          }
-        });
+        if (result.status === "success") {
+          cartItems.forEach(entry => {
+            const invItem = state.inventory.find(i => i.name === entry.item.name);
+            if (invItem) {
+              invItem.quantity = Math.max(0, invItem.quantity - entry.quantity);
+            }
+          });
 
-        showToast('success', 'Sale saved successfully!');
-        state.cart = {};
-        document.getElementById('cart-customer-name').value = '';
-        document.getElementById('cart-customer-phone').value = '';
-        
-        render(); // Re-render immediately to show localized adjustments on screen
-
-        // Extended timeout fallback handles server propagation delay safely before downloading fresh arrays
-        setTimeout(async () => {
+          showToast('success', 'Sale saved successfully!');
+          state.cart = {};
+          document.getElementById('cart-customer-name').value = '';
+          document.getElementById('cart-customer-phone').value = '';
+          render();
+          
           await refreshData(false);
           if (state.selectedSalesDate === new Date().toISOString().split('T')[0]) {
             fetchSalesForDate(state.selectedSalesDate);
           }
-        }, 3000);
-
+        } else {
+          showToast('error', result.message || 'Database rejected order updates.');
+        }
       } catch (err) {
         showToast('error', 'Network failure updating transaction records.');
+      } finally {
         showLoader(false);
       }
     }
@@ -456,31 +454,31 @@
 
       showLoader(true, "Saving row update...");
       try {
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ 
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ 
           action: 'updateInventory', 
           itemName: name, 
           quantity: qty, 
           capitalPrice: capital, 
           price: price
         }) });
+        const result = await res.json();
 
-        // Optimistic update to match inputs immediately
-        const localItem = state.inventory.find(i => i.name === name);
-        if (localItem) {
-          localItem.quantity = qty;
-          localItem.capitalPrice = capital;
-          localItem.price = price;
-        }
-        
-        showToast('success', 'Changes Saved.');
-        render();
-
-        setTimeout(async () => {
+        if (result.status === "success") {
+          const localItem = state.inventory.find(i => i.name === name);
+          if (localItem) {
+            localItem.quantity = qty;
+            localItem.capitalPrice = capital;
+            localItem.price = price;
+          }
+          showToast('success', 'Changes Saved.');
+          render();
           await refreshData(false);
-        }, 3000);
-
+        } else {
+          showToast('error', result.message || 'Server rejected changes.');
+        }
       } catch (e) { 
         showToast('error', 'Failed saving changes.'); 
+      } finally {
         showLoader(false);
       }
     }
@@ -504,22 +502,22 @@
 
       showLoader(true, "Adding item to inventory...");
       try {
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await res.json();
         
-        // Push item onto the view array immediately
-        state.inventory.push({ name: name, capitalPrice: capital, price: price, quantity: qty });
-        
-        form.reset(); 
-        toggleNewItemForm(); 
-        showToast('success', 'Item registered.');
-        render();
-
-        setTimeout(async () => {
+        if (result.status === "success") {
+          state.inventory.push({ name: name, capitalPrice: capital, price: price, quantity: qty });
+          form.reset(); 
+          toggleNewItemForm(); 
+          showToast('success', 'Item registered.');
+          render();
           await refreshData(false);
-        }, 3000);
-
+        } else {
+          showToast('error', result.message || 'Server structural failure.');
+        }
       } catch (err) { 
         showToast('error', 'Error writing new data item.'); 
+      } finally {
         showLoader(false);
       }
     }
@@ -568,7 +566,11 @@
     function showLoader(show, msg = "Loading...") {
       const loader = document.getElementById('loading-overlay');
       document.getElementById('loading-message').innerText = msg;
-      loader.className = show ? "fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center transition-all duration-300" : "hidden";
+      if (show) {
+        loader.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+      } else {
+        loader.classList.add('opacity-0', 'pointer-events-none');
+      }
     }
     function showToast(type, msg) {
       const container = document.getElementById('toast-container');
