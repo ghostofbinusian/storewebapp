@@ -44,7 +44,9 @@
             const user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
             const loginBtn = document.getElementById('login-btn');
-
+            const errMsg = document.getElementById('login-err-msg');
+            
+            if(errMsg) errMsg.classList.add('hidden');
             loginBtn.innerText = "Memuat...";
             loginBtn.disabled = true;
 
@@ -57,12 +59,18 @@
                     localStorage.setItem('role', data.role);
                     initApp();
                 } else {
-                    alert(data.message);
+                    if(errMsg) {
+                        errMsg.innerText = data.message;
+                        errMsg.classList.remove('hidden');
+                    }
                     loginBtn.innerText = "Masuk Aplikasi";
                     loginBtn.disabled = false;
                 }
             } catch (err) {
-                alert("Gagal terhubung ke server database.");
+                if(errMsg) {
+                    errMsg.innerText = "Gagal terhubung ke server database.";
+                    errMsg.classList.remove('hidden');
+                }
                 loginBtn.innerText = "Masuk Aplikasi";
                 loginBtn.disabled = false;
             }
@@ -76,6 +84,8 @@
             document.getElementById('password').value = "";
             document.getElementById('login-btn').innerText = "Masuk Aplikasi";
             document.getElementById('login-btn').disabled = false;
+            const errMsg = document.getElementById('login-err-msg');
+            if(errMsg) errMsg.classList.add('hidden');
         }
 
         function initApp() {
@@ -185,12 +195,20 @@
             }
             products.forEach((prod, index) => {
                 const itemCard = document.createElement('div');
-                itemCard.className = "p-4 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-blue-500 transition shadow-md";
-                itemCard.onclick = () => addToCart(index);
+                itemCard.className = "p-4 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-blue-500 transition shadow-md relative overflow-hidden group";
+                
+                // Block clicks quietly if out of stock instead of alerting popups
+                if (prod.quantity <= 0) {
+                    itemCard.className += " opacity-40 cursor-not-allowed select-none";
+                } else {
+                    itemCard.onclick = () => addToCart(index);
+                }
+                
                 itemCard.innerHTML = `
                     <div class="font-bold text-lg text-white">${prod.name}</div>
                     <div class="text-emerald-400 font-semibold mt-1">Rp ${Number(prod.price).toLocaleString('id-ID')}</div>
-                    <div class="text-sm text-gray-400 mt-2">Sisa Stok: <span class="font-bold text-gray-200">${prod.quantity}</span></div>
+                    <div class="text-sm text-gray-400 mt-2">Sisa Stok: <span class="font-bold ${prod.quantity <= 3 ? 'text-rose-400' : 'text-gray-200'}">${prod.quantity}</span></div>
+                    ${prod.quantity <= 0 ? '<div class="absolute inset-0 bg-slate-950/40 flex items-center justify-center"><span class="text-xs uppercase tracking-wider font-bold bg-rose-950 border border-rose-800 px-2 py-0.5 rounded text-rose-200">Habis</span></div>' : ''}
                 `;
                 catalog.appendChild(itemCard);
             });
@@ -198,19 +216,27 @@
 
         function addToCart(index) {
             const product = products[index];
-            if (product.quantity <= 0) {
-                alert("Stok produk ini sudah habis!");
-                return;
-            }
+            if (product.quantity <= 0) return; // Silent guard
+            
             const existingCartItem = cart.find(item => item.itemName === product.name);
             if (existingCartItem) {
-                if (existingCartItem.quantity >= product.quantity) {
-                    alert("Tidak dapat memasukkan item melebihi sisa stok!");
-                    return;
-                }
+                if (existingCartItem.quantity >= product.quantity) return; // Silent guard against exceeding limit
                 existingCartItem.quantity += 1;
             } else {
-                cart.push({ itemName: product.name, price: product.price, quantity: 1 });
+                cart.push({ itemName: product.name, price: product.price, quantity: 1, maxStock: product.quantity });
+            }
+            renderCart();
+        }
+
+        // PLUS AND MINUS QUANTITY MODES
+        function adjustCartQty(index, amount) {
+            const item = cart[index];
+            const targetQty = item.quantity + amount;
+            
+            if (targetQty <= 0) {
+                cart.splice(index, 1); // Delete item automatically if goes to 0
+            } else if (targetQty <= item.maxStock) {
+                item.quantity = targetQty;
             }
             renderCart();
         }
@@ -240,25 +266,39 @@
             cartList.innerHTML = "";
             let total = 0;
             
+            if (cart.length === 0) {
+                cartList.innerHTML = `<div class="text-xs text-gray-500 text-center py-6">Keranjang kosong</div>`;
+                document.getElementById('grand-total').innerText = "Rp 0";
+                return;
+            }
+            
             cart.forEach((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
                 
                 const div = document.createElement('div');
-                div.className = "flex justify-between items-center text-sm border-b border-slate-800 pb-3 mb-3 gap-2";
+                div.className = "flex flex-col sm:flex-row sm:items-center justify-between text-sm border-b border-slate-800/60 pb-3 mb-3 gap-2 last:border-b-0 last:pb-0 last:mb-0";
                 
                 div.innerHTML = `
                     <div class="flex-1">
                         <span class="font-semibold text-gray-200 block">${item.itemName}</span>
-                        <span class="text-xs text-gray-400">Kuantitas: x${item.quantity}</span>
+                        
+                        <div class="flex items-center gap-1.5 mt-1.5">
+                            <button onclick="adjustCartQty(${index}, -1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-gray-300 font-bold flex items-center justify-center transition select-none cursor-pointer text-xs">-</button>
+                            <span class="w-8 text-center text-xs font-bold text-gray-300 bg-slate-950 py-0.5 border border-slate-800 rounded">${item.quantity}</span>
+                            <button onclick="adjustCartQty(${index}, 1)" ${item.quantity >= item.maxStock ? 'disabled class="w-6 h-6 rounded bg-slate-950 text-gray-600 font-bold flex items-center justify-center opacity-30 cursor-not-allowed select-none text-xs"' : 'class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-gray-300 font-bold flex items-center justify-center transition select-none cursor-pointer text-xs"'} >+</button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-500">Rp</span>
-                        <input type="number" value="${item.price}" 
-                            oninput="updateCartItemPrice(${index}, this.value)"
-                            class="w-24 bg-slate-900 border border-slate-800 text-xs text-emerald-400 rounded-lg p-1.5 focus:outline-none focus:border-blue-500 font-medium" />
+                    
+                    <div class="flex items-center justify-between sm:justify-end gap-3">
+                        <div class="flex items-center gap-1">
+                            <span class="text-[11px] text-gray-500">Rp</span>
+                            <input type="number" value="${item.price}" 
+                                oninput="updateCartItemPrice(${index}, this.value)"
+                                class="w-20 bg-slate-900 border border-slate-800 text-xs text-emerald-400 rounded-lg p-1 focus:outline-none focus:border-blue-500 font-medium" />
+                        </div>
+                        <span id="row-total-${index}" class="text-emerald-400 font-medium text-right min-w-[75px]">Rp ${itemTotal.toLocaleString('id-ID')}</span>
                     </div>
-                    <span id="row-total-${index}" class="text-emerald-400 font-medium text-right min-w-[70px]">Rp ${itemTotal.toLocaleString('id-ID')}</span>
                 `;
                 cartList.appendChild(div);
             });
@@ -266,14 +306,14 @@
         }
 
         async function submitCheckout() {
-            if (cart.length === 0) {
-                alert("Keranjang belanja kosong!");
-                return;
-            }
+            if (cart.length === 0) return;
+            
             const cName = document.getElementById('cust-name').value || "Pelanggan Walk-in";
             const cPhone = document.getElementById('cust-phone').value || "";
             const checkoutBtn = document.getElementById('checkout-btn');
+            const cartStatusMsg = document.getElementById('cart-status-msg');
 
+            if(cartStatusMsg) cartStatusMsg.classList.add('hidden');
             checkoutBtn.innerText = "Memproses...";
             checkoutBtn.disabled = true;
 
@@ -292,15 +332,24 @@
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const data = await res.json();
                 if (data.status === "success") {
-                    alert("Transaksi Berhasil Disimpan!");
                     cart = [];
                     document.getElementById('cust-name').value = "";
                     document.getElementById('cust-phone').value = "";
                     renderCart();
                     fetchInventory();
+                    if(cartStatusMsg) {
+                        cartStatusMsg.innerText = "Transaksi Berhasil Disimpan!";
+                        cartStatusMsg.className = "text-xs font-bold text-center text-emerald-400 mt-2 block";
+                        cartStatusMsg.classList.remove('hidden');
+                        setTimeout(() => cartStatusMsg.classList.add('hidden'), 4000);
+                    }
                 }
             } catch (err) {
-                alert("Gagal melakukan checkout.");
+                if(cartStatusMsg) {
+                    cartStatusMsg.innerText = "Gagal melakukan checkout.";
+                    cartStatusMsg.className = "text-xs font-bold text-center text-rose-400 mt-2 block";
+                    cartStatusMsg.classList.remove('hidden');
+                }
             } finally {
                 checkoutBtn.innerText = "Simpan Transaksi (Checkout)";
                 checkoutBtn.disabled = false;
@@ -368,11 +417,16 @@
                 document.getElementById('inv-price').value = product.price;
             }
             document.getElementById('inv-name').readOnly = false;
+            const formStatusMsg = document.getElementById('form-status-msg');
+            if(formStatusMsg) formStatusMsg.classList.add('hidden');
         }
 
         async function handleSaveInventory(event) {
             event.preventDefault();
             const submitBtn = document.getElementById('save-inv-btn');
+            const formStatusMsg = document.getElementById('form-status-msg');
+            
+            if(formStatusMsg) formStatusMsg.classList.add('hidden');
             submitBtn.innerText = "Menyimpan...";
             submitBtn.disabled = true;
 
@@ -393,19 +447,27 @@
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 const data = await res.json();
                 if (data.status === "success") {
-                    alert("Data Stok Berhasil Diperbarui!");
                     document.getElementById('inventory-form').reset();
                     fetchInventory();
+                    if(formStatusMsg) {
+                        formStatusMsg.innerText = "Data Stok Berhasil Diperbarui!";
+                        formStatusMsg.className = "text-xs font-bold text-center text-emerald-400 mt-2 block";
+                        formStatusMsg.classList.remove('hidden');
+                        setTimeout(() => formStatusMsg.classList.add('hidden'), 4000);
+                    }
                 }
             } catch (err) {
-                alert("Gagal memperbarui database gudang.");
+                if(formStatusMsg) {
+                    formStatusMsg.innerText = "Gagal memperbarui database gudang.";
+                    formStatusMsg.className = "text-xs font-bold text-center text-rose-400 mt-2 block";
+                    formStatusMsg.classList.remove('hidden');
+                }
             } finally {
                 submitBtn.innerText = "Simpan Perubahan";
                 submitBtn.disabled = false;
             }
         }
 
-        // NEW CLICKABLE TOGGLE DETAILED SALES LOG FUNCTION
         function toggleSalesDetails(index) {
             const detailSection = document.getElementById(`sales-detail-${index}`);
             const chevronIcon = document.getElementById(`chevron-${index}`);
@@ -448,7 +510,6 @@
                         `;
                     });
 
-                    // Upgraded with click action to expand detail breakdown lists instantly
                     sessionWrapper.innerHTML = `
                         <div onclick="toggleSalesDetails(${index})" class="flex flex-wrap justify-between items-center bg-slate-950 p-4 cursor-pointer hover:bg-slate-900/40 transition gap-2 select-none">
                             <div class="flex items-center gap-3">
@@ -494,6 +555,7 @@
                 <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Kata Sandi (Password)</label>
                 <input type="password" id="password" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl focus:border-blue-500 focus:outline-none text-white" required />
             </div>
+            <span id="login-err-msg" class="text-xs font-bold text-center text-rose-400 hidden"></span>
             <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition mt-2">
                 Masuk Aplikasi
             </button>
@@ -526,7 +588,7 @@
                     <input type="text" id="cust-phone" placeholder="Nomor HP Pelanggan" class="w-full bg-slate-950 border border-slate-800 p-2.5 text-sm rounded-xl focus:border-blue-500 focus:outline-none text-white" />
                 </div>
                 
-                <div id="cart-list" class="min-h-[140px] max-h-[300px] overflow-y-auto mb-4 bg-slate-950 p-3 rounded-xl border border-slate-800"></div>
+                <div id="cart-list" class="min-h-[140px] max-h-[340px] overflow-y-auto mb-4 bg-slate-950 p-3 rounded-xl border border-slate-800"></div>
                 
                 <div class="flex justify-between items-center font-bold text-lg mb-4 px-1 text-white">
                     <span>Total Tagihan:</span>
@@ -535,6 +597,7 @@
                 <button onclick="submitCheckout()" id="checkout-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition cursor-pointer">
                     Simpan Transaksi (Checkout)
                 </button>
+                <span id="cart-status-msg" class="hidden"></span>
             </div>
         </div>
 
@@ -563,6 +626,7 @@
                     <button type="submit" id="save-inv-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition mt-1 shadow-md cursor-pointer">
                         Simpan Perubahan
                     </button>
+                    <span id="form-status-msg" class="hidden"></span>
                 </form>
             </div>
 
