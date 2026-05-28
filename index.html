@@ -1,586 +1,455 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>UD.SemeruPutra Storefront System</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Outfit', 'sans-serif'] },
-          colors: {
-            brand: {
-              50: '#f5f3ff', 100: '#ede9fe', 200: '#ddd6fe', 300: '#c4b5fd',
-              400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', 700: '#6d28d9',
-              800: '#5b21b6', 900: '#4c1d95', 950: '#2e1065',
-            },
-          },
-        },
-      },
-    }
-  </script>
-  <style>
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UD. Semeru Putra</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+        }
+    </style>
 </head>
-<body class="h-full bg-slate-900 text-slate-100 font-sans antialiased overflow-x-hidden">
+<body class="p-6">
 
-  <div id="toast-container" class="fixed top-6 right-6 z-50 flex flex-col gap-3 pointer-events-none max-w-sm w-full"></div>
+    <script>
+        // CONFIGURATION: Replace this with your Google Apps Script Web App URL
+        const API_URL = "URL_APP_SCRIPT_ANDA_DISINI";
 
-  <div id="loading-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
-    <div class="w-16 h-16 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
-    <p id="loading-message" class="mt-4 text-slate-300 font-medium tracking-wide text-sm">Syncing with Google Database...</p>
-  </div>
+        let userRole = localStorage.getItem('role') || null;
+        let products = [];
+        let cart = [];
 
-  <div class="min-h-full flex flex-col">
-
-    <div id="role-selection-view" class="flex-1 flex flex-col items-center justify-center px-4 py-12 bg-slate-950">
-      <div class="text-center mb-10">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 mb-4">
-          <i data-lucide="store" class="w-8 h-8 text-white"></i>
-        </div>
-        <h1 class="text-3xl font-extrabold tracking-tight text-white">UD.<span class="text-brand-400">SemeruPutra</span></h1>
-      </div>
-
-      <div class="w-full max-w-md px-4">
-        <div id="portal-intro-card" class="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 text-center shadow-2xl">
-          <button onclick="showPinEntry()" class="w-full py-3.5 bg-gradient-to-r from-brand-600 to-indigo-500 text-white font-bold rounded-xl shadow-lg flex items-center justify-center gap-2">
-            🔑 Enter Admin Portal
-          </button>
-        </div>
-
-        <div id="portal-pin-card" class="hidden p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-2xl">
-          <form onsubmit="verifyAdminPin(event)" class="space-y-4">
-            <input type="password" id="pin-input" maxlength="4" placeholder="••••" class="w-full text-center tracking-[1em] text-2xl font-bold px-4 py-3 bg-slate-950 border border-slate-800 focus:border-brand-500 text-white rounded-xl focus:outline-none">
-            <button type="submit" class="w-full py-2.5 bg-brand-600 text-white rounded-xl text-sm font-bold">Verify PIN</button>
-          </form>
-        </div>
-      </div>
-    </div>
-
-    <div id="workspace-view" class="hidden flex-1 flex flex-col min-w-0 bg-slate-950">
-      
-      <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-30">
-        <div class="max-w-7xl mx-auto px-4">
-          <div class="flex items-center justify-between h-16">
-            <div class="flex items-center gap-2">
-              <span class="text-base font-bold text-white">UD.<span class="text-brand-400">SemeruPutra</span></span>
-            </div>
-            
-            <nav class="flex space-x-1">
-              <button onclick="switchTab('cashier')" id="tab-btn-cashier" class="p-2 sm:px-4 sm:py-2 rounded-xl text-sm font-medium transition-all text-slate-400 flex items-center gap-2">
-                <i data-lucide="shopping-cart" class="w-5 h-5 sm:w-4 sm:h-4"></i> <span>Cashier</span>
-              </button>
-              <button onclick="switchTab('storage')" id="tab-btn-storage" class="p-2 sm:px-4 sm:py-2 rounded-xl text-sm font-medium transition-all text-slate-400 flex items-center gap-2">
-                <i data-lucide="database" class="w-5 h-5 sm:w-4 sm:h-4"></i> <span>Storage</span>
-              </button>
-              <button onclick="switchTab('sales')" id="tab-btn-sales" class="p-2 sm:px-4 sm:py-2 rounded-xl text-sm font-medium transition-all text-slate-400 flex items-center gap-2">
-                <i data-lucide="calendar" class="w-5 h-5 sm:w-4 sm:h-4"></i> <span>Sales Log</span>
-              </button>
-            </nav>
-
-            <button onclick="logout()" class="px-3 py-1.5 rounded-xl border border-red-500/20 text-red-400 text-xs font-medium">Exit</button>
-          </div>
-        </div>
-      </header>
-
-      <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6 flex flex-col min-h-0">
-        
-        <div id="tab-content-cashier" class="tab-pane hidden flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
-          <div class="flex-1 flex flex-col min-h-0 bg-slate-900/30 border border-slate-800 rounded-2xl p-4">
-            <div class="mb-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
-              <h2 class="text-xl font-bold text-white flex items-center gap-2"><i data-lucide="layout-grid" class="w-5 h-5 text-brand-400"></i> Catalog Products</h2>
-              <input oninput="updateSearch(this.value)" type="text" placeholder="Search products..." class="w-full sm:max-w-xs px-4 py-2 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-sm">
-            </div>
-            <div class="flex-1 overflow-y-auto no-scrollbar min-h-0">
-              <div id="cashier-product-grid" class="grid grid-cols-2 md:grid-cols-3 gap-3"></div>
-            </div>
-          </div>
-
-          <div class="w-full lg:w-96 flex flex-col min-h-0 bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
-            <h2 class="text-lg font-bold text-white mb-3 flex items-center gap-2"><i data-lucide="shopping-bag" class="w-5 h-5 text-emerald-400"></i> Active Cart Drawer</h2>
-            
-            <div class="space-y-2 mb-3">
-              <input type="text" id="cart-customer-name" placeholder="Customer Name" class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 text-white rounded-xl">
-              <input type="text" id="cart-customer-phone" placeholder="Phone Number" class="w-full px-3 py-1.5 text-xs bg-slate-950 border border-slate-800 text-white rounded-xl">
-            </div>
-
-            <div class="flex-1 overflow-y-auto no-scrollbar border-t border-b border-slate-800/80 my-2 py-2 min-h-[180px]">
-              <div id="cart-list" class="flex flex-col gap-2"></div>
-            </div>
-
-            <div class="pt-2 space-y-3">
-              <div class="flex justify-between items-baseline">
-                <span class="text-xs font-semibold text-slate-400">Final Adjusted Total</span>
-                <span id="cart-grand-total" class="text-2xl font-extrabold text-white">Rp 0</span>
-              </div>
-              <button onclick="checkoutSale()" class="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-lg">Save Transaction</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="tab-content-storage" class="tab-pane hidden flex-1 flex flex-col gap-4 min-h-0">
-          <div class="bg-slate-900/30 border border-slate-800 rounded-2xl overflow-hidden">
-            <button onclick="toggleNewItemForm()" class="w-full flex items-center justify-between px-4 py-3 text-sm font-bold text-white">
-              <span class="flex items-center gap-2"><i data-lucide="plus-circle" class="w-4 h-4 text-brand-400"></i> Register Factory Shipment Item</span>
-              <i id="add-form-chevron" data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300"></i>
-            </button>
-            <div id="new-item-form-container" class="max-h-0 overflow-hidden transition-all duration-300 ease-in-out bg-slate-900/10">
-              <form id="new-item-form" onsubmit="submitNewItem(event)" class="p-4 grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <input required name="name" type="text" placeholder="Product Name" class="w-full px-3 py-1.5 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-xs">
-                <input required name="capitalPrice" type="number" placeholder="Factory Capital Price" class="w-full px-3 py-1.5 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-xs">
-                <input required name="price" type="number" placeholder="Standard Selling Price" class="w-full px-3 py-1.5 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-xs">
-                <input required name="quantity" type="number" placeholder="Stock Quantity" class="w-full px-3 py-1.5 border border-slate-700 bg-slate-950 text-slate-200 rounded-xl text-xs">
-                <div class="sm:col-span-4 flex justify-end"><button type="submit" class="px-4 py-1.5 bg-brand-600 text-white rounded-xl text-xs font-bold">Add Item Row</button></div>
-              </form>
-            </div>
-          </div>
-
-          <div class="flex-1 flex flex-col min-h-0 bg-slate-900/30 border border-slate-800 rounded-2xl p-4">
-            <div class="flex-1 overflow-auto no-scrollbar rounded-xl">
-              <table class="w-full border-collapse text-left text-xs text-slate-300">
-                <thead class="bg-slate-900 text-slate-400 font-semibold uppercase sticky top-0 z-10 border-b border-slate-800">
-                  <tr>
-                    <th class="px-3 py-3">Product Name</th>
-                    <th class="px-3 py-3 w-28">Factory Cost</th>
-                    <th class="px-3 py-3 w-28">Selling Price</th>
-                    <th class="px-3 py-3 w-28 text-emerald-400">Profit Margin</th>
-                    <th class="px-3 py-3 w-16">Stock</th>
-                    <th class="px-3 py-3 text-right w-12">Save</th>
-                  </tr>
-                </thead>
-                <tbody id="inventory-table-body" class="divide-y divide-slate-800/50"></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <div id="tab-content-sales" class="tab-pane hidden flex-1 flex flex-col gap-4 min-h-0">
-          <div class="p-4 bg-slate-900/40 border border-slate-800 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3 w-full sm:w-auto">
-              <i data-lucide="calendar" class="w-5 h-5 text-brand-400"></i>
-              <input type="date" id="sales-calendar-input" onchange="fetchSalesForDate(this.value)" class="bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-xl text-sm font-medium text-white focus:outline-none focus:border-brand-500 w-full sm:w-auto">
-            </div>
-            <div class="flex gap-4 text-xs font-semibold text-slate-400">
-              <div>Total Sales Volume: <span id="sales-day-total-val" class="text-emerald-400 font-bold">Rp 0</span></div>
-            </div>
-          </div>
-
-          <div id="sales-log-grouped-container" class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-3 min-h-0"></div>
-        </div>
-
-      </main>
-    </div>
-  </div>
-
-  <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzL7tYuMLadAtzaZ_dJV8fkmg0do0es6LqbaDIK77e_OLHLxwfSe2hce0s3YNb6Tpnr/exec';
-
-    function formatIDR(val) {
-      return 'Rp ' + Math.round(parseFloat(val) || 0).toLocaleString('id-ID');
-    }
-
-    const state = {
-      role: null, activeTab: 'cashier', inventory: [], cart: {}, searchQuery: '', selectedSalesDate: ''
-    };
-
-    function render() {
-      if (!state.role) {
-        document.getElementById('role-selection-view').classList.remove('hidden');
-        document.getElementById('workspace-view').classList.add('hidden');
-        return;
-      }
-      document.getElementById('role-selection-view').classList.add('hidden');
-      document.getElementById('workspace-view').classList.remove('hidden');
-
-      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`tab-content-${state.activeTab}`).classList.remove('hidden');
-      
-      ['cashier', 'storage', 'sales'].forEach(tab => {
-        const btn = document.getElementById(`tab-btn-${tab}`);
-        if(btn) {
-          btn.className = state.activeTab === tab 
-            ? "p-2 sm:px-4 sm:py-2 rounded-xl text-sm font-medium bg-brand-500/10 text-brand-400 border border-brand-500/20 flex items-center gap-2"
-            : "p-2 sm:px-4 sm:py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-slate-200 flex items-center gap-2";
-        }
-      });
-      
-      if (state.activeTab === 'cashier') renderCashier();
-      if (state.activeTab === 'storage') renderStorage();
-
-      lucide.createIcons();
-    }
-
-    function renderCashier() {
-      const grid = document.getElementById('cashier-product-grid');
-      const filtered = state.inventory.filter(item => item.name.toLowerCase().includes(state.searchQuery.toLowerCase()));
-
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div class="col-span-full py-8 text-center text-slate-500 text-xs">No products found</div>`;
-        renderCart(); return;
-      }
-
-      grid.innerHTML = filtered.map(item => {
-        const cartQty = state.cart[item.name]?.quantity || 0;
-        const remainingStock = Math.max(0, item.quantity - cartQty);
-        const disabled = item.quantity <= 0 || remainingStock <= 0;
-
-        return `
-          <button onclick="${disabled ? '' : `addToCart('${item.name.replace(/'/g, "\\'")}')`}"
-            class="relative flex flex-col p-4 rounded-xl border bg-slate-950/40 text-left ${disabled ? 'opacity-40 cursor-not-allowed border-transparent' : 'border-slate-800 hover:border-brand-500/40'}" ${disabled ? 'disabled' : ''}>
-            <span class="text-[9px] uppercase font-bold text-slate-400 mb-1">${item.quantity <= 0 ? 'OUT OF STOCK' : `${remainingStock} remaining`}</span>
-            <h4 class="text-xs font-bold text-white mb-1 truncate w-full">${item.name}</h4>
-            <div class="flex justify-between items-center w-full mt-2">
-              <div class="flex flex-col">
-                <span class="text-[9px] text-slate-500">Cost: ${formatIDR(item.capitalPrice)}</span>
-                <span class="text-xs font-bold text-slate-300">Retail: ${formatIDR(item.price)}</span>
-              </div>
-              <span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Margin: ${formatIDR(item.price - item.capitalPrice)}</span>
-            </div>
-            ${cartQty > 0 ? `<div class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center">${cartQty}</div>` : ''}
-          </button>
-        `;
-      }).join('');
-      renderCart();
-    }
-
-    function renderCart() {
-      const cartList = document.getElementById('cart-list');
-      const grandTotalLabel = document.getElementById('cart-grand-total');
-      const items = Object.values(state.cart);
-
-      if (items.length === 0) {
-        cartList.innerHTML = `<div class="py-8 text-center text-slate-600 text-xs">Cart is Empty</div>`;
-        grandTotalLabel.innerText = "Rp 0"; return;
-      }
-
-      let sum = 0;
-      cartList.innerHTML = items.map(entry => {
-        const currentLineTotal = entry.customPrice * entry.quantity;
-        sum += currentLineTotal;
-        return `
-          <div class="flex flex-col p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs gap-2">
-            <div class="flex justify-between items-start min-w-0">
-              <div class="truncate pr-2">
-                <h5 class="font-bold text-white truncate">${entry.item.name}</h5>
-                <span class="text-[10px] text-slate-500">Factory Base: ${formatIDR(entry.item.capitalPrice)}</span>
-              </div>
-              <div class="flex items-center bg-slate-900 rounded-lg p-0.5 gap-1.5 shrink-0">
-                <button onclick="decrementCartItem('${entry.item.name.replace(/'/g, "\\'")}')" class="px-1.5 text-slate-400 font-bold">-</button>
-                <span class="text-white font-bold">${entry.quantity}</span>
-                <button onclick="incrementCartItem('${entry.item.name.replace(/'/g, "\\'")}')" class="px-1.5 text-slate-400 font-bold">+</button>
-              </div>
-            </div>
-            
-            <div class="flex items-center justify-between border-t border-slate-900/60 pt-2 gap-2">
-              <span class="text-slate-400 font-medium">Custom Selling Price:</span>
-              <div class="relative flex-1 max-w-[130px]">
-                <span class="absolute left-1.5 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]">Rp</span>
-                <input type="number" value="${entry.customPrice}" 
-                  oninput="updateCartItemPrice('${entry.item.name.replace(/'/g, "\\'")}', this.value)"
-                  class="w-full pl-6 pr-2 py-1 bg-slate-900 text-white rounded-md text-xs font-bold text-right border border-slate-700 focus:border-brand-500 focus:outline-none">
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      grandTotalLabel.innerText = formatIDR(sum);
-    }
-
-    function updateCartItemPrice(name, newPriceVal) {
-      if (state.cart[name]) {
-        state.cart[name].customPrice = parseFloat(newPriceVal) || 0;
-        let sum = 0;
-        Object.values(state.cart).forEach(entry => {
-          sum += entry.customPrice * entry.quantity;
-        });
-        document.getElementById('cart-grand-total').innerText = formatIDR(sum);
-      }
-    }
-
-    function renderStorage() {
-      const tbody = document.getElementById('inventory-table-body');
-      tbody.innerHTML = state.inventory.map((item, idx) => {
-        const standardProfit = Math.max(0, item.price - item.capitalPrice);
-        return `
-          <tr class="border-b border-slate-800/40">
-            <td class="px-3 py-3 font-bold text-white truncate max-w-[120px]">${item.name}</td>
-            <td class="px-3 py-3"><input type="number" id="capital-input-${idx}" value="${item.capitalPrice}" oninput="recalculateRowProfit(${idx})" class="w-24 px-1 py-0.5 bg-slate-950 border border-slate-800 rounded text-center"></td>
-            <td class="px-3 py-3"><input type="number" id="price-input-${idx}" value="${item.price}" oninput="recalculateRowProfit(${idx})" class="w-24 px-1 py-0.5 bg-slate-950 border border-slate-800 rounded text-center"></td>
-            <td class="px-3 py-3 font-bold text-emerald-400" id="profit-label-${idx}">${formatIDR(standardProfit)}</td>
-            <td class="px-3 py-3"><input type="number" id="qty-input-${idx}" value="${item.quantity}" class="w-14 px-1 py-0.5 bg-slate-950 border border-slate-800 rounded text-center"></td>
-            <td class="px-3 py-3 text-right"><button onclick="updateRowInventory('${item.name.replace(/'/g, "\\'")}', ${idx})" class="p-1 bg-brand-600 rounded text-white"><i data-lucide="save" class="w-3.5 h-3.5"></i></button></td>
-          </tr>
-        `;
-      }).join('');
-      lucide.createIcons();
-    }
-
-    function recalculateRowProfit(idx) {
-      const capital = parseFloat(document.getElementById(`capital-input-${idx}`).value) || 0;
-      const price = parseFloat(document.getElementById(`price-input-${idx}`).value) || 0;
-      document.getElementById(`profit-label-${idx}`).innerText = formatIDR(price - capital);
-    }
-
-    async function fetchSalesForDate(dateString) {
-      if (!dateString) return;
-      state.selectedSalesDate = dateString;
-      showLoader(true, `Reading files for date: ${dateString}...`);
-      
-      try {
-        const res = await fetch(`${SCRIPT_URL}?getSalesDate=${dateString}&_=${new Date().getTime()}`);
-        const result = await res.json();
-        const container = document.getElementById('sales-log-grouped-container');
-        const dayTotalLabel = document.getElementById('sales-day-total-val');
-        
-        if (result.status === "empty" || !result.data || result.data.length === 0) {
-          container.innerHTML = `<div class="py-12 text-center text-slate-500 text-xs">No records tracked for this calendar date.</div>`;
-          dayTotalLabel.innerText = "Rp 0";
-          return;
-        }
-        
-        let dailyGrandSum = 0;
-        container.innerHTML = result.data.map(session => {
-          dailyGrandSum += session.grandTotal;
-          const itemsLines = session.items.map(i => `
-            <div class="flex justify-between text-slate-300 py-0.5">
-              <span>${i.itemName} <b class="text-slate-500">x${i.quantity}</b></span>
-              <span>${formatIDR(i.total)}</span>
-            </div>
-          `).join('');
-
-          return `
-            <div class="p-4 bg-slate-900/50 border border-slate-800 rounded-xl text-xs space-y-2">
-              <div class="flex justify-between border-b border-slate-800/80 pb-1.5 items-center">
-                <div>
-                  <h4 class="font-bold text-white">${session.customerName}</h4>
-                  <p class="text-[10px] text-slate-400 font-mono">${session.customerPhone || 'No Contact Input'}</p>
-                </div>
-                <span class="text-slate-500 font-mono">${session.time}</span>
-              </div>
-              <div class="bg-slate-950/50 p-2 rounded-lg divide-y divide-slate-900/30">${itemsLines}</div>
-              <div class="flex justify-between font-bold pt-1"><span class="text-slate-400">Total Charged</span><span class="text-emerald-400">${formatIDR(session.grandTotal)}</span></div>
-            </div>
-          `;
-        }).join('');
-        
-        dayTotalLabel.innerText = formatIDR(dailyGrandSum);
-      } catch (err) {
-        showToast('error', 'Could not open sales spreadsheets.');
-      } finally {
-        showLoader(false);
-      }
-    }
-
-    async function refreshData(showSpinner = true) {
-      if (showSpinner) showLoader(true, "Fetching latest live database...");
-      try {
-        const res = await fetch(`${SCRIPT_URL}?_=${new Date().getTime()}`);
-        const data = await res.json();
-        state.inventory = data.map(item => ({
-          name: item.name, 
-          capitalPrice: parseFloat(item.capitalPrice) || 0,
-          price: parseFloat(item.price) || 0, 
-          quantity: parseInt(item.quantity) || 0
-        }));
-      } catch (err) {
-        showToast('error', 'Error syncing sheet data catalogues.');
-      } finally { if (showSpinner) showLoader(false); render(); }
-    }
-
-    async function checkoutSale() {
-      const cartItems = Object.values(state.cart);
-      if (cartItems.length === 0) return;
-
-      const customerName = document.getElementById('cart-customer-name').value.trim() || "Walk-in Customer";
-      const customerPhone = document.getElementById('cart-customer-phone').value.trim();
-
-      showLoader(true, "Logging final transactions to sheets...");
-
-      const payload = {
-        action: 'newSale',
-        customerName: customerName,
-        customerPhone: customerPhone,
-        items: cartItems.map(entry => ({
-          itemName: entry.item.name, 
-          quantity: entry.quantity, 
-          totalPrice: entry.customPrice * entry.quantity
-        }))
-      };
-
-      try {
-        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const result = await res.json();
-        
-        if (result.status === "success") {
-          cartItems.forEach(entry => {
-            const invItem = state.inventory.find(i => i.name === entry.item.name);
-            if (invItem) {
-              invItem.quantity = Math.max(0, invItem.quantity - entry.quantity);
+        // App Initialization
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!userRole) {
+                showView('login-view');
+            } else {
+                initApp();
             }
-          });
+        });
 
-          showToast('success', 'Sale saved successfully!');
-          state.cart = {};
-          document.getElementById('cart-customer-name').value = '';
-          document.getElementById('cart-customer-phone').value = '';
-          render();
-          
-          await refreshData(false);
-          if (state.selectedSalesDate === new Date().toISOString().split('T')[0]) {
-            fetchSalesForDate(state.selectedSalesDate);
-          }
-        } else {
-          showToast('error', result.message || 'Database rejected order updates.');
+        function showView(viewId) {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('app-view').classList.add('hidden');
+            document.getElementById(viewId).classList.remove('hidden');
         }
-      } catch (err) {
-        showToast('error', 'Network failure updating transaction records.');
-      } finally {
-        showLoader(false);
-      }
-    }
 
-    async function updateRowInventory(name, idx) {
-      const qty = parseInt(document.getElementById(`qty-input-${idx}`).value) || 0;
-      const capital = parseFloat(document.getElementById(`capital-input-${idx}`).value) || 0;
-      const price = parseFloat(document.getElementById(`price-input-${idx}`).value) || 0;
+        // Handle Login
+        async function handleLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const loginBtn = document.getElementById('login-btn');
 
-      showLoader(true, "Saving row update...");
-      try {
-        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ 
-          action: 'updateInventory', 
-          itemName: name, 
-          quantity: qty, 
-          capitalPrice: capital, 
-          price: price
-        }) });
-        const result = await res.json();
+            loginBtn.innerText = "Memuat...";
+            loginBtn.disabled = true;
 
-        if (result.status === "success") {
-          const localItem = state.inventory.find(i => i.name === name);
-          if (localItem) {
-            localItem.quantity = qty;
-            localItem.capitalPrice = capital;
-            localItem.price = price;
-          }
-          showToast('success', 'Changes Saved.');
-          render();
-          await refreshData(false);
-        } else {
-          showToast('error', result.message || 'Server rejected changes.');
+            try {
+                const res = await fetch(`${API_URL}?action=login&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`);
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    userRole = data.role;
+                    localStorage.setItem('role', data.role);
+                    initApp();
+                } else {
+                    alert(data.message);
+                    loginBtn.innerText = "Masuk Aplikasi";
+                    loginBtn.disabled = false;
+                }
+            } catch (err) {
+                alert("Gagal terhubung ke server database.");
+                loginBtn.innerText = "Masuk Aplikasi";
+                loginBtn.disabled = false;
+            }
         }
-      } catch (e) { 
-        showToast('error', 'Failed saving changes.'); 
-      } finally {
-        showLoader(false);
-      }
-    }
 
-    async function submitNewItem(e) {
-      e.preventDefault();
-      const form = document.getElementById('new-item-form');
-      const formData = new FormData(form);
-      const name = formData.get('name').trim();
-      const capital = parseFloat(formData.get('capitalPrice')) || 0;
-      const price = parseFloat(formData.get('price')) || 0;
-      const qty = parseInt(formData.get('quantity')) || 0;
+        function handleLogout() {
+            userRole = null;
+            localStorage.clear();
+            showView('login-view');
+            document.getElementById('username').value = "";
+            document.getElementById('password').value = "";
+            document.getElementById('login-btn').innerText = "Masuk Aplikasi";
+            document.getElementById('login-btn').disabled = false;
+        }
 
-      const payload = { 
-        action: 'updateInventory', 
-        itemName: name, 
-        capitalPrice: capital,
-        price: price, 
-        quantity: qty
-      };
+        function initApp() {
+            showView('app-view');
+            document.getElementById('display-role').innerText = userRole === 'admin' ? 'Mode Admin' : 'Mode Pekerja';
+            
+            // Set up navigation permissions
+            const navbar = document.getElementById('navbar');
+            if (userRole === 'admin') {
+                navbar.innerHTML = `
+                    <button onclick="switchTab('cashier')" id="tab-cashier" class="px-4 py-2 rounded bg-blue-600 text-white font-medium">Menu Kasir</button>
+                    <button onclick="switchTab('storage')" id="tab-storage" class="px-4 py-2 rounded bg-slate-800 text-gray-300 font-medium">Kelola Gudang</button>
+                `;
+                switchTab('cashier');
+            } else {
+                // Workers only see storage tab, cashier button is missing entirely
+                navbar.innerHTML = `
+                    <button onclick="switchTab('storage')" id="tab-storage" class="px-4 py-2 rounded bg-blue-600 text-white font-medium">Update Stok Barang</button>
+                `;
+                switchTab('storage');
+            }
+            fetchInventory();
+        }
 
-      showLoader(true, "Adding item to inventory...");
-      try {
-        const res = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const result = await res.json();
+        async function fetchInventory() {
+            try {
+                const res = await fetch(`${API_URL}?role=${userRole}`);
+                products = await res.json();
+                renderCashierCatalog();
+                renderStorageTable();
+            } catch (err) {
+                console.error("Error fetching inventory:", err);
+            }
+        }
+
+        function switchTab(tabName) {
+            const cashierSection = document.getElementById('cashier-section');
+            const storageSection = document.getElementById('storage-section');
+            const tabCashier = document.getElementById('tab-cashier');
+            const tabStorage = document.getElementById('tab-storage');
+
+            if (tabName === 'cashier' && userRole === 'admin') {
+                cashierSection.classList.remove('hidden');
+                storageSection.classList.add('hidden');
+                if(tabCashier) { tabCashier.className = "px-4 py-2 rounded bg-blue-600 text-white font-medium"; }
+                if(tabStorage) { tabStorage.className = "px-4 py-2 rounded bg-slate-800 text-gray-300 font-medium"; }
+            } else {
+                cashierSection.classList.add('hidden');
+                storageSection.classList.remove('hidden');
+                if(tabCashier) { tabCashier.className = "px-4 py-2 rounded bg-slate-800 text-gray-300 font-medium"; }
+                if(tabStorage) { tabStorage.className = "px-4 py-2 rounded bg-blue-600 text-white font-medium"; }
+                
+                // Adjust storage inputs form dynamically for worker vs admin
+                const dynamicFields = document.getElementById('admin-only-fields');
+                const formTitle = document.getElementById('form-title');
+                if (userRole === 'worker') {
+                    dynamicFields.classList.add('hidden');
+                    formTitle.innerText = "Sesuaikan Stok Pekerja";
+                } else {
+                    dynamicFields.classList.remove('hidden');
+                    formTitle.innerText = "Tambah / Edit Barang";
+                }
+            }
+        }
+
+        // CASHIER CODE (FIXED: Clicking element reads proper object reference)
+        function renderCashierCatalog() {
+            const catalog = document.getElementById('cashier-catalog');
+            catalog.innerHTML = "";
+            
+            if (products.length === 0) {
+                catalog.innerHTML = `<div class="text-gray-400 col-span-2 text-center py-4">Tidak ada produk ditemukan</div>`;
+                return;
+            }
+
+            products.forEach((prod, index) => {
+                const itemCard = document.createElement('div');
+                itemCard.className = "p-4 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-blue-500 transition shadow-md";
+                // Fixed trigger parsing the precise data array index perfectly
+                itemCard.onclick = () => addToCart(index);
+                
+                itemCard.innerHTML = `
+                    <div class="font-bold text-lg text-white">${prod.name}</div>
+                    <div class="text-emerald-400 font-semibold mt-1">Rp ${Number(prod.price).toLocaleString('id-ID')}</div>
+                    <div class="text-sm text-gray-400 mt-2">Sisa Stok: <span class="font-bold text-gray-200">${prod.quantity}</span></div>
+                `;
+                catalog.appendChild(itemCard);
+            });
+        }
+
+        function addToCart(index) {
+            const product = products[index];
+            if (product.quantity <= 0) {
+                alert("Stok produk ini sudah habis!");
+                return;
+            }
+
+            const existingCartItem = cart.find(item => item.itemName === product.name);
+            if (existingCartItem) {
+                if (existingCartItem.quantity >= product.quantity) {
+                    alert("Tidak dapat memasukkan item melebihi sisa stok!");
+                    return;
+                }
+                existingCartItem.quantity += 1;
+            } else {
+                cart.push({
+                    itemName: product.name,
+                    price: product.price,
+                    quantity: 1
+                });
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const cartList = document.getElementById('cart-list');
+            const grandTotalEl = document.getElementById('grand-total');
+            cartList.innerHTML = "";
+            
+            let total = 0;
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center text-sm border-b border-slate-800 pb-2 mb-2";
+                div.innerHTML = `
+                    <div>
+                        <span class="font-semibold text-gray-200">${item.itemName}</span>
+                        <span class="text-xs text-gray-400 block">x${item.quantity}</span>
+                    </div>
+                    <span class="text-emerald-400 font-medium">Rp ${itemTotal.toLocaleString('id-ID')}</span>
+                `;
+                cartList.appendChild(div);
+            });
+
+            grandTotalEl.innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
+        async function submitCheckout() {
+            if (cart.length === 0) {
+                alert("Keranjang belanja kosong!");
+                return;
+            }
+
+            const cName = document.getElementById('cust-name').value || "Pelanggan Walk-in";
+            const cPhone = document.getElementById('cust-phone').value || "";
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            checkoutBtn.innerText = "Memproses...";
+            checkoutBtn.disabled = true;
+
+            const payload = {
+                action: "newSale",
+                customerName: cName,
+                customerPhone: cPhone,
+                items: cart.map(i => ({
+                    itemName: i.itemName,
+                    quantity: i.quantity,
+                    totalPrice: i.price * i.quantity
+                }))
+            };
+
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (data.status === "success") {
+                    alert("Transaksi Berhasil Disimpan!");
+                    cart = [];
+                    document.getElementById('cust-name').value = "";
+                    document.getElementById('cust-phone').value = "";
+                    renderCart();
+                    fetchInventory();
+                }
+            } catch (err) {
+                alert("Gagal melakukan checkout.");
+            } finally {
+                checkoutBtn.innerText = "Simpan Transaksi (Checkout)";
+                checkoutBtn.disabled = false;
+            }
+        }
+
+        // STORAGE MANAGEMENT CODE
+        function renderStorageTable() {
+            const tableBody = document.getElementById('storage-table-body');
+            const tableHead = document.getElementById('storage-table-head');
+            tableBody.innerHTML = "";
+
+            if (userRole === 'admin') {
+                tableHead.innerHTML = `
+                    <th class="p-3 text-left">Nama Produk</th>
+                    <th class="p-3 text-right">Harga Modal</th>
+                    <th class="p-3 text-right">Harga Jual</th>
+                    <th class="p-3 text-center">Jumlah Stok</th>
+                `;
+            } else {
+                tableHead.innerHTML = `
+                    <th class="p-3 text-left">Nama Produk</th>
+                    <th class="p-3 text-center">Jumlah Stok</th>
+                `;
+            }
+
+            products.forEach(p => {
+                const row = document.createElement('tr');
+                row.className = "border-b border-slate-800 hover:bg-slate-900 cursor-pointer transition";
+                row.onclick = () => selectItemToForm(p);
+
+                if (userRole === 'admin') {
+                    row.innerHTML = `
+                        <td class="p-3 text-gray-200 font-medium">${p.name}</td>
+                        <td class="p-3 text-right text-gray-400">Rp ${Number(p.capitalPrice).toLocaleString('id-ID')}</td>
+                        <td class="p-3 text-right text-emerald-400">Rp ${Number(p.price).toLocaleString('id-ID')}</td>
+                        <td class="p-3 text-center font-bold text-white">${p.quantity}</td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td class="p-3 text-gray-200 font-medium">${p.name}</td>
+                        <td class="p-3 text-center font-bold text-white">${p.quantity}</td>
+                    `;
+                }
+                tableBody.appendChild(row);
+            });
+        }
+
+        function selectItemToForm(product) {
+            document.getElementById('inv-name').value = product.name;
+            document.getElementById('inv-stock').value = product.quantity;
+            if (userRole === 'admin') {
+                document.getElementById('inv-capital').value = product.capitalPrice;
+                document.getElementById('inv-price').value = product.price;
+                document.getElementById('inv-name').readOnly = false;
+            } else {
+                // Workers cannot modify product names, only update numerical stock levels
+                document.getElementById('inv-name').readOnly = true;
+            }
+        }
+
+        async function handleSaveInventory(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('save-inv-btn');
+            submitBtn.innerText = "Menyimpan...";
+            submitBtn.disabled = true;
+
+            const name = document.getElementById('inv-name').value;
+            const stock = document.getElementById('inv-stock').value;
+            const capital = document.getElementById('inv-capital').value;
+            const price = document.getElementById('inv-price').value;
+
+            const actionType = userRole === 'worker' ? 'workerUpdateStock' : 'updateInventory';
+            const payload = {
+                action: actionType,
+                itemName: name,
+                quantity: parseInt(stock),
+                ...(userRole === 'admin' && { capitalPrice: parseFloat(capital), price: parseFloat(price) })
+            };
+
+            try {
+                const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const data = await res.json();
+                if (data.status === "success") {
+                    alert("Data Stok Berhasil Diperbarui!");
+                    document.getElementById('inventory-form').reset();
+                    document.getElementById('inv-name').readOnly = false;
+                    fetchInventory();
+                }
+            } catch (err) {
+                alert("Gagal memperbarui database gudang.");
+            } finally {
+                submitBtn.innerText = "Simpan Perubahan";
+                submitBtn.disabled = false;
+            }
+        }
+    </script>
+
+    <div id="login-view" class="max-w-md mx-auto mt-24 bg-slate-900 border border-slate-800 p-8 rounded-2xl shadow-xl hidden">
+        <h2 class="text-2xl font-bold text-center mb-2 tracking-wide text-white">UD. Semeru Putra</h2>
+        <p class="text-sm text-gray-400 text-center mb-6">Silakan masuk menggunakan akun Anda</p>
         
-        if (result.status === "success") {
-          state.inventory.push({ name: name, capitalPrice: capital, price: price, quantity: qty });
-          form.reset(); 
-          toggleNewItemForm(); 
-          showToast('success', 'Item registered.');
-          render();
-          await refreshData(false);
-        } else {
-          showToast('error', result.message || 'Server structural failure.');
-        }
-      } catch (err) { 
-        showToast('error', 'Error writing new data item.'); 
-      } finally {
-        showLoader(false);
-      }
-    }
+        <form onsubmit="handleLogin(event)" class="flex flex-col gap-4">
+            <div>
+                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Nama Pengguna (Username)</label>
+                <input type="text" id="username" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl focus:border-blue-500 focus:outline-none text-white" required />
+            </div>
+            <div>
+                <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-1">Kata Sandi (Password)</label>
+                <input type="password" id="password" class="w-full bg-slate-950 border border-slate-800 p-3 rounded-xl focus:border-blue-500 focus:outline-none text-white" required />
+            </div>
+            <button type="submit" id="login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition mt-2">
+                Masuk Aplikasi
+            </button>
+        </form>
+    </div>
 
-    function showPinEntry() {
-      document.getElementById('portal-intro-card').classList.add('hidden');
-      document.getElementById('portal-pin-card').classList.remove('hidden');
-      document.getElementById('pin-input').focus();
-    }
-    function verifyAdminPin(e) {
-      e.preventDefault();
-      if (document.getElementById('pin-input').value === '2411') { state.role = 'admin'; render(); } 
-      else { alert('Invalid PIN'); }
-    }
-    function switchTab(tab) { 
-      state.activeTab = tab; 
-      render(); 
-      if (tab === 'sales' && !state.selectedSalesDate) {
-        const localTodayStr = new Date().toISOString().split('T')[0];
-        document.getElementById('sales-calendar-input').value = localTodayStr;
-        fetchSalesForDate(localTodayStr);
-      }
-    }
-    function logout() { state.role = null; state.cart = {}; render(); }
-    function updateSearch(val) { state.searchQuery = val; renderCashier(); }
-    function toggleNewItemForm() {
-      const container = document.getElementById('new-item-form-container');
-      const isOpen = container.style.maxHeight && container.style.maxHeight !== "0px";
-      container.style.maxHeight = isOpen ? "0px" : container.scrollHeight + "px";
-    }
-    function addToCart(name) {
-      const item = state.inventory.find(i => i.name === name);
-      if (!item) return;
-      if (!state.cart[name]) state.cart[name] = { quantity: 1, item: item, customPrice: item.price };
-      else if (state.cart[name].quantity < item.quantity) state.cart[name].quantity++;
-      render();
-    }
-    function incrementCartItem(name) { if (state.cart[name] && state.cart[name].quantity < state.cart[name].item.quantity) { state.cart[name].quantity++; render(); } }
-    function decrementCartItem(name) {
-      if (state.cart[name]) {
-        if (state.cart[name].quantity > 1) state.cart[name].quantity--;
-        else delete state.cart[name];
-        render();
-      }
-    }
-    function showLoader(show, msg = "Loading...") {
-      const loader = document.getElementById('loading-overlay');
-      document.getElementById('loading-message').innerText = msg;
-      if (show) {
-        loader.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
-      } else {
-        loader.classList.add('opacity-0', 'pointer-events-none');
-      }
-    }
-    function showToast(type, msg) {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      toast.className = `p-3 rounded-xl border text-xs font-semibold ${type === 'success' ? 'bg-slate-900 border-emerald-500/20 text-emerald-400' : 'bg-slate-900 border-red-500/20 text-red-400'}`;
-      toast.innerText = msg; container.appendChild(toast);
-      setTimeout(() => toast.remove(), 2500);
-    }
+    <div id="app-view" class="max-w-6xl mx-auto hidden">
+        <div class="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-white">UD. Semeru Putra</h1>
+                <span id="display-role" class="inline-block mt-1 px-2.5 py-0.5 text-xs font-semibold bg-blue-900 text-blue-200 rounded-full"></span>
+            </div>
+            <button onclick="handleLogout()" class="bg-red-950 hover:bg-red-900 border border-red-800 text-red-200 text-sm font-semibold px-4 py-2 rounded-xl transition">
+                Keluar Keluar
+            </button>
+        </div>
 
-    window.addEventListener('DOMContentLoaded', () => { refreshData(); });
-  </script>
+        <div id="navbar" class="flex gap-3 mb-6"></div>
+
+        <div id="cashier-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6 hidden">
+            <div class="lg:col-span-2 bg-slate-950 border border-slate-900 p-5 rounded-2xl">
+                <h3 class="text-lg font-bold text-gray-200 mb-4 tracking-wide">Katalog Produk</h3>
+                <div id="cashier-catalog" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl h-fit shadow-md">
+                <h3 class="text-lg font-bold text-gray-200 mb-4 tracking-wide">Keranjang Belanja</h3>
+                <div class="flex flex-col gap-3 mb-4">
+                    <input type="text" id="cust-name" placeholder="Nama Pelanggan" class="w-full bg-slate-950 border border-slate-800 p-2.5 text-sm rounded-xl focus:border-blue-500 focus:outline-none text-white" />
+                    <input type="text" id="cust-phone" placeholder="Nomor HP Pelanggan" class="w-full bg-slate-950 border border-slate-800 p-2.5 text-sm rounded-xl focus:border-blue-500 focus:outline-none text-white" />
+                </div>
+                
+                <div id="cart-list" class="min-h-[120px] max-h-[240px] overflow-y-auto mb-4 bg-slate-950 p-3 rounded-xl border border-slate-800"></div>
+                
+                <div class="flex justify-between items-center font-bold text-lg mb-4 px-1 text-white">
+                    <span>Total Tagihan:</span>
+                    <span id="grand-total" class="text-emerald-400">Rp 0</span>
+                </div>
+                <button onclick="submitCheckout()" id="checkout-btn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-md transition">
+                    Simpan Transaksi (Checkout)
+                </button>
+            </div>
+        </div>
+
+        <div id="storage-section" class="grid grid-cols-1 lg:grid-cols-3 gap-6 hidden">
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl h-fit">
+                <h3 id="form-title" class="text-lg font-bold text-gray-200 mb-4">Kelola Barang</h3>
+                <form id="inventory-form" onsubmit="handleSaveInventory(event)" class="flex flex-col gap-4">
+                    <div>
+                        <label class="text-xs font-semibold text-gray-400 block mb-1">Nama Produk</label>
+                        <input type="text" id="inv-name" class="w-full bg-slate-950 border border-slate-800 p-2.5 text-sm rounded-xl text-white focus:border-blue-500 focus:outline-none" required />
+                    </div>
+                    
+                    <div id="admin-only-fields" class="flex flex-col gap-4">
+                        <div>
+                            <label class="text-xs font-semibold text-gray-400 block mb-1">Harga Modal (Rp)</label>
+                            <input type="number" id="inv-capital" class="w-full bg-slate-950 border border-slate-800 p-2.5 text-sm rounded-xl text-white focus:border-blue-500 focus:outline-none" />
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-gray-400 block mb-1">Harga Jual (Rp)</label>
+                            <input type="number" id="inv-price" class="w-full bg-slate-950 border border-slate-800 p-2.5 text-sm rounded-xl text-white focus:border-blue-500 focus:outline-none" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs font-semibold text-gray-400 block mb-1">Jumlah Stok Baru</label>
+                        <input type="number" id="inv-stock" class="w-full bg-slate-950 border border-slate-800 p-2.5 text-sm rounded-xl text-white focus:border-blue-500 focus:outline-none" required />
+                    </div>
+                    <button type="submit" id="save-inv-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition mt-1 shadow-md">
+                        Simpan Perubahan
+                    </button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2 bg-slate-950 border border-slate-900 p-5 rounded-2xl">
+                <h3 class="text-lg font-bold text-gray-200 mb-3">Daftar Stok Produk</h3>
+                <p class="text-xs text-gray-400 mb-4">*Klik pada baris produk untuk mengedit kuantitas stok secara instan.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr id="storage-table-head" class="bg-slate-900 text-gray-400 border-b border-slate-800"></tr>
+                        </thead>
+                        <tbody id="storage-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </body>
 </html>
