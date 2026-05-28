@@ -151,7 +151,6 @@
             }
         }
 
-        // FETCH USER ACCESS TRACKER (NEW)
         async function fetchUserLoginLogs() {
             const container = document.getElementById('account-login-logs');
             container.innerHTML = "<div class='text-gray-400 text-xs p-2'>Mengambil data login...</div>";
@@ -176,7 +175,7 @@
             }
         }
 
-        // CASHIER IMPLEMENTATION
+        // CASHIER CODE WITH UPDATEABLE CARTS
         function renderCashierCatalog() {
             const catalog = document.getElementById('cashier-catalog');
             catalog.innerHTML = "";
@@ -211,31 +210,63 @@
                 }
                 existingCartItem.quantity += 1;
             } else {
+                // Inserts the normal product base price as the starting point inside the cart session row
                 cart.push({ itemName: product.name, price: product.price, quantity: 1 });
             }
             renderCart();
         }
 
+        // DYNAMIC PRICING ADJUSTMENT FUNCTION
+        function updateCartItemPrice(index, newPriceValue) {
+            const parsedPrice = parseFloat(newPriceValue) || 0;
+            cart[index].price = parsedPrice;
+            calculateCartTotalOnly(); 
+        }
+
+        function calculateCartTotalOnly() {
+            let total = 0;
+            cart.forEach((item, index) => {
+                const rowTotal = item.price * item.quantity;
+                total += rowTotal;
+                
+                // Live updates the row display calculations sub-element container without redrawing focus away
+                const textContainer = document.getElementById(`row-total-${index}`);
+                if (textContainer) {
+                    textContainer.innerText = `Rp ${rowTotal.toLocaleString('id-ID')}`;
+                }
+            });
+            document.getElementById('grand-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+        }
+
         function renderCart() {
             const cartList = document.getElementById('cart-list');
-            const grandTotalEl = document.getElementById('grand-total');
             cartList.innerHTML = "";
             let total = 0;
-            cart.forEach(item => {
+            
+            cart.forEach((item, index) => {
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
+                
                 const div = document.createElement('div');
-                div.className = "flex justify-between items-center text-sm border-b border-slate-800 pb-2 mb-2";
+                div.className = "flex justify-between items-center text-sm border-b border-slate-800 pb-3 mb-3 gap-2";
+                
+                // Swapped static item price label layout into a functional interactive custom input field row box
                 div.innerHTML = `
-                    <div>
-                        <span class="font-semibold text-gray-200">${item.itemName}</span>
-                        <span class="text-xs text-gray-400 block">x${item.quantity}</span>
+                    <div class="flex-1">
+                        <span class="font-semibold text-gray-200 block">${item.itemName}</span>
+                        <span class="text-xs text-gray-400">Kuantitas: x${item.quantity}</span>
                     </div>
-                    <span class="text-emerald-400 font-medium">Rp ${itemTotal.toLocaleString('id-ID')}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-500">Rp</span>
+                        <input type="number" value="${item.price}" 
+                            oninput="updateCartItemPrice(${index}, this.value)"
+                            class="w-24 bg-slate-900 border border-slate-800 text-xs text-emerald-400 rounded-lg p-1.5 focus:outline-none focus:border-blue-500 font-medium" />
+                    </div>
+                    <span id="row-total-${index}" class="text-emerald-400 font-medium text-right min-w-[70px]">Rp ${itemTotal.toLocaleString('id-ID')}</span>
                 `;
                 cartList.appendChild(div);
             });
-            grandTotalEl.innerText = `Rp ${total.toLocaleString('id-ID')}`;
+            document.getElementById('grand-total').innerText = `Rp ${total.toLocaleString('id-ID')}`;
         }
 
         async function submitCheckout() {
@@ -257,7 +288,7 @@
                 items: cart.map(i => ({
                     itemName: i.itemName,
                     quantity: i.quantity,
-                    totalPrice: i.price * i.quantity
+                    totalPrice: i.price * i.quantity // This passes your mom's customized modified total price straight down to your Sheet log!
                 }))
             };
 
@@ -280,7 +311,7 @@
             }
         }
 
-        // STORAGE MANAGEMENT 
+        // STORAGE CODES
         function handleStorageSearch(val) {
             searchStorageQuery = val.toLowerCase();
             renderStorageTable();
@@ -340,7 +371,7 @@
                 document.getElementById('inv-capital').value = product.capitalPrice;
                 document.getElementById('inv-price').value = product.price;
             }
-            document.getElementById('inv-name').readOnly = false; // Set to False so worker can type freely
+            document.getElementById('inv-name').readOnly = false;
         }
 
         async function handleSaveInventory(event) {
@@ -378,7 +409,7 @@
             }
         }
 
-        // SALES LOG PREVIEWER
+        // SALES LOG FEED
         async function fetchSalesLog() {
             const selectedDate = document.getElementById('sales-date-picker').value;
             const logContainer = document.getElementById('sales-log-container');
@@ -466,13 +497,16 @@
                 <h3 class="text-lg font-bold text-gray-200 mb-4 tracking-wide">Katalog Produk</h3>
                 <div id="cashier-catalog" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
             </div>
+            
             <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl h-fit shadow-md">
                 <h3 class="text-lg font-bold text-gray-200 mb-4 tracking-wide">Keranjang Belanja</h3>
                 <div class="flex flex-col gap-3 mb-4">
                     <input type="text" id="cust-name" placeholder="Nama Pelanggan" class="w-full bg-slate-950 border border-slate-800 p-2.5 text-sm rounded-xl focus:border-blue-500 focus:outline-none text-white" />
                     <input type="text" id="cust-phone" placeholder="Nomor HP Pelanggan" class="w-full bg-slate-950 border border-slate-800 p-2.5 text-sm rounded-xl focus:border-blue-500 focus:outline-none text-white" />
                 </div>
-                <div id="cart-list" class="min-h-[120px] max-h-[240px] overflow-y-auto mb-4 bg-slate-950 p-3 rounded-xl border border-slate-800"></div>
+                
+                <div id="cart-list" class="min-h-[140px] max-h-[300px] overflow-y-auto mb-4 bg-slate-950 p-3 rounded-xl border border-slate-800"></div>
+                
                 <div class="flex justify-between items-center font-bold text-lg mb-4 px-1 text-white">
                     <span>Total Tagihan:</span>
                     <span id="grand-total" class="text-emerald-400">Rp 0</span>
