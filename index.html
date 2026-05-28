@@ -36,7 +36,7 @@
 
   <div id="loading-overlay" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center transition-all duration-300 opacity-0 pointer-events-none">
     <div class="w-16 h-16 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
-    <p id="loading-message" class="mt-4 text-slate-300 font-medium text-sm tracking-wide">Syncing Data...</p>
+    <p id="loading-message" class="mt-4 text-slate-300 font-medium tracking-wide text-sm">Syncing with Google Database...</p>
   </div>
 
   <div class="min-h-full flex flex-col">
@@ -66,6 +66,7 @@
     </div>
 
     <div id="workspace-view" class="hidden flex-1 flex flex-col min-w-0 bg-slate-950">
+      
       <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4">
           <div class="flex items-center justify-between h-16">
@@ -334,7 +335,8 @@
       showLoader(true, `Reading files for date: ${dateString}...`);
       
       try {
-        const res = await fetch(`${SCRIPT_URL}?getSalesDate=${dateString}`);
+        // Cache busting dynamic timestamp addition to fix early loading bugs
+        const res = await fetch(`${SCRIPT_URL}?getSalesDate=${dateString}&_=${new Date().getTime()}`);
         const result = await res.json();
         const container = document.getElementById('sales-log-grouped-container');
         const dayTotalLabel = document.getElementById('sales-day-total-val');
@@ -378,10 +380,11 @@
       }
     }
 
-    async function refreshData() {
-      showLoader(true, "Syncing spreadsheet layout...");
+    async function refreshData(showSpinner = true) {
+      if (showSpinner) showLoader(true, "Fetching latest live database...");
       try {
-        const res = await fetch(SCRIPT_URL);
+        // Appended cache-breaker string prevents browsers from loading stale spreadsheet evaluations
+        const res = await fetch(`${SCRIPT_URL}?_=${new Date().getTime()}`);
         const data = await res.json();
         state.inventory = data.map(item => ({
           name: item.name, 
@@ -391,7 +394,7 @@
         }));
       } catch (err) {
         showToast('error', 'Error syncing sheet data catalogues.');
-      } finally { showLoader(false); render(); }
+      } finally { if (showSpinner) showLoader(false); render(); }
     }
 
     async function checkoutSale() {
@@ -410,24 +413,40 @@
         items: cartItems.map(entry => ({
           itemName: entry.item.name, 
           quantity: entry.quantity, 
-          totalPrice: entry.customPrice * entry.quantity // Uses the customized rate entered by your mom
+          totalPrice: entry.customPrice * entry.quantity
         }))
       };
 
       try {
-        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
         
+        // Optimistic State Update: Deduct stock values inside the browser instantly without waiting for the server reload loop
+        cartItems.forEach(entry => {
+          const invItem = state.inventory.find(i => i.name === entry.item.name);
+          if (invItem) {
+            invItem.quantity = Math.max(0, invItem.quantity - entry.quantity);
+          }
+        });
+
         showToast('success', 'Sale saved successfully!');
         state.cart = {};
         document.getElementById('cart-customer-name').value = '';
         document.getElementById('cart-customer-phone').value = '';
         
-        if (state.selectedSalesDate === new Date().toISOString().split('T')[0]) {
-          fetchSalesForDate(state.selectedSalesDate);
-        }
+        render(); // Re-render immediately to show localized adjustments on screen
+
+        // Extended timeout fallback handles server propagation delay safely before downloading fresh arrays
+        setTimeout(async () => {
+          await refreshData(false);
+          if (state.selectedSalesDate === new Date().toISOString().split('T')[0]) {
+            fetchSalesForDate(state.selectedSalesDate);
+          }
+        }, 3000);
+
       } catch (err) {
         showToast('error', 'Network failure updating transaction records.');
-      } finally { showLoader(false); await refreshData(); }
+        showLoader(false);
+      }
     }
 
     async function updateRowInventory(name, idx) {
@@ -437,36 +456,72 @@
 
       showLoader(true, "Saving row update...");
       try {
-        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ 
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ 
           action: 'updateInventory', 
           itemName: name, 
           quantity: qty, 
           capitalPrice: capital, 
           price: price
         }) });
+
+        // Optimistic update to match inputs immediately
+        const localItem = state.inventory.find(i => i.name === name);
+        if (localItem) {
+          localItem.quantity = qty;
+          localItem.capitalPrice = capital;
+          localItem.price = price;
+        }
+        
         showToast('success', 'Changes Saved.');
-      } catch (e) { showToast('error', 'Failed saving changes.'); }
-      finally { showLoader(false); await refreshData(); }
+        render();
+
+        setTimeout(async () => {
+          await refreshData(false);
+        }, 3000);
+
+      } catch (e) { 
+        showToast('error', 'Failed saving changes.'); 
+        showLoader(false);
+      }
     }
 
     async function submitNewItem(e) {
       e.preventDefault();
       const form = document.getElementById('new-item-form');
       const formData = new FormData(form);
+      const name = formData.get('name').trim();
+      const capital = parseFloat(formData.get('capitalPrice')) || 0;
+      const price = parseFloat(formData.get('price')) || 0;
+      const qty = parseInt(formData.get('quantity')) || 0;
+
       const payload = { 
         action: 'updateInventory', 
-        itemName: formData.get('name').trim(), 
-        capitalPrice: parseFloat(formData.get('capitalPrice')) || 0,
-        price: parseFloat(formData.get('price')) || 0, 
-        quantity: parseInt(formData.get('quantity')) || 0
+        itemName: name, 
+        capitalPrice: capital,
+        price: price, 
+        quantity: qty
       };
 
-      showLoader(true);
+      showLoader(true, "Adding item to inventory...");
       try {
-        await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
-        form.reset(); toggleNewItemForm(); showToast('success', 'Item registered.');
-      } catch (err) { showToast('error', 'Error writing new data item.'); }
-      finally { showLoader(false); await refreshData(); }
+        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+        
+        // Push item onto the view array immediately
+        state.inventory.push({ name: name, capitalPrice: capital, price: price, quantity: qty });
+        
+        form.reset(); 
+        toggleNewItemForm(); 
+        showToast('success', 'Item registered.');
+        render();
+
+        setTimeout(async () => {
+          await refreshData(false);
+        }, 3000);
+
+      } catch (err) { 
+        showToast('error', 'Error writing new data item.'); 
+        showLoader(false);
+      }
     }
 
     function showPinEntry() {
